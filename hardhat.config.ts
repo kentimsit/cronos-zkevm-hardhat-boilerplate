@@ -32,6 +32,11 @@ const config: HardhatUserConfig = {
             verifyURL:
                 "https://zkevm-t0.cronos.org/explorer/contract_verification",
         },
+        ethereumSepoliaTestnet: {
+            url: process.env.ETHEREUM_SEPOLIA_URL,
+            chainId: 11155111,
+            accounts: [<string>process.env.WALLET_PRIVATE_KEY],
+        },
         dockerizedNode: {
             url: "http://localhost:3050",
             ethNetwork: "http://localhost:8545",
@@ -55,6 +60,13 @@ const config: HardhatUserConfig = {
     },
     solidity: {
         version: "0.8.20",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200,
+            },
+            viaIR: true,
+        },
     },
 };
 
