@@ -52,13 +52,15 @@ const config: HardhatUserConfig = {
         },
     },
     zksolc: {
-        version: "1.3.22",
+        // For Cronos zkEVM, currently only supports zksolc versionn up to 1.3.19
+        version: "1.3.19",
         settings: {
             // find all available options in the official documentation
             // https://era.zksync.io/docs/tools/hardhat/hardhat-zksync-solc.html#configuration
         },
     },
     solidity: {
+        // For Cronos zkEVM, currently only supports solidity versionn up to 0.8.23
         version: "0.8.20",
         settings: {
             optimizer: {
