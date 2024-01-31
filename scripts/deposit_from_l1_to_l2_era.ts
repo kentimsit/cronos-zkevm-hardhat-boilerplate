@@ -5,27 +5,26 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { Wallet, Provider, utils } from "zksync-ethers";
+import {
+    Wallet as ZkWallet,
+    Provider as ZkProvider,
+    utils as Zkutils,
+} from "zksync-ethers";
 import { ethers } from "ethers";
 
-const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY
-    ? process.env.WALLET_PRIVATE_KEY
-    : "";
-
-// For zkSync Era:
-// const zkSyncProvider = new Provider("https://sepolia.era.zksync.dev");
-// For Cronos zkEVM:
-const zkSyncProvider = new Provider("https://rpc-hyperchain-t0.cronos.org");
-const ethereumProvider = new ethers.JsonRpcProvider(
-    process.env.ETHEREUM_SEPOLIA_URL
-);
-const wallet = new Wallet(PRIVATE_KEY, zkSyncProvider, ethereumProvider);
-
-const ERC20_L1_TOKEN_ADDRESS = process.env.ERC20_L1_TOKEN_ADDRESS
-    ? process.env.ERC20_L1_TOKEN_ADDRESS
-    : "";
-
 async function main() {
+    // Set up
+    const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY
+        ? process.env.WALLET_PRIVATE_KEY
+        : "";
+    const l1Provider = new ethers.JsonRpcProvider(
+        process.env.ETHEREUM_SEPOLIA_URL
+    );
+    const l2Provider = new ZkProvider("https://sepolia.era.zksync.dev");
+    const wallet = new ZkWallet(PRIVATE_KEY, l2Provider, l1Provider);
+    const ERC20_L1_TOKEN_ADDRESS = process.env.ERC20_L1_TOKEN_ADDRESS
+        ? process.env.ERC20_L1_TOKEN_ADDRESS
+        : "";
     // Depositing tokens to L2
     console.log("Depositing ERC20 tokens...");
     const depositHandle = await wallet.deposit({
@@ -37,7 +36,7 @@ async function main() {
     console.log("Waiting for deposit transaction to be processed on L1");
     let waitForReceipt = true;
     while (waitForReceipt) {
-        const receipt = await ethereumProvider.getTransactionReceipt(
+        const receipt = await l1Provider.getTransactionReceipt(
             depositHandle.hash
         );
         console.log(receipt);
