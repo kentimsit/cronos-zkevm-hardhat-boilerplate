@@ -49,14 +49,17 @@ async function main() {
     const ERC20_L1_TOKEN = new ethers.Contract(ERC20_L1_TOKEN_ADDRESS, ERC20_L1_TOKENFactory_abi, l1wallet);
     console.log("Current ERC20 wallet balance on L1: ", ethers.formatEther(await ERC20_L1_TOKEN.balanceOf(l1wallet.address)));
     const L1ERC20Bridge = new ethers.Contract(L1_ERC20_BRIDGE_ADDRESS, L1ERC20BridgeFactory_abi, l1wallet);
+    console.log("L1 ERC20 Bridge contract address", await L1ERC20Bridge.getAddress());
 
+    // Approve the bridge to spend ERC20 tokens
     console.log("Approving Bridge for spending ERC20 token...");
     const amountTransferred = "1"
-    let tx = await ERC20_L1_TOKEN.approve(L1ERC20Bridge.getAddress(), ethers.parseEther(amountTransferred));
+    let tx = await ERC20_L1_TOKEN.approve(await L1ERC20Bridge.getAddress(), ethers.parseEther(amountTransferred));
     await tx.wait();
-    let allowance = await ERC20_L1_TOKEN.allowance(l1wallet.address, L1ERC20Bridge.getAddress());
+    let allowance = await ERC20_L1_TOKEN.allowance(l1wallet.address, await L1ERC20Bridge.getAddress());
     console.log("ERC20 allowance: ", ethers.formatEther(allowance), "token");
 
+    // Estimate the cost of the deposit transaction
     const DEPOSIT_L2_GAS_LIMIT = 10_000_000;
     const gasPrice = await l2Provider.getGasPrice();
     const ZKSYNC_DIAMOND_PROXY = new ethers.Contract(ZKSYNC_ADDRESS, Zkutils.ZKSYNC_MAIN_ABI, l1wallet);
@@ -79,6 +82,7 @@ async function main() {
     //         uint256 _l1Amount
     // ) public nonReentrant senderCanCallFunction(allowList) returns (bytes32 l2TxHash)
 
+    // Making the deposit
     console.log("Calling deposit function...");
     tx = await L1ERC20Bridge["deposit(address,address,uint256,uint256,uint256,address,uint256)"](
         l2wallet.address,
