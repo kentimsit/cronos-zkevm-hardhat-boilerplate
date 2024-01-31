@@ -14,11 +14,13 @@ import { ethers } from "ethers";
 
 import { MyERC20Token__factory as ERC20_L1_TOKENFactory} from "../typechain-types";
 // Import JSON ABIs
-const ERC20_L1_TOKENFactory_abi = require("../artifacts/contracts/erc20/MyERC20Token.sol/MyERC20Token.json").abi;
-const L1ERC20BridgeFactory_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
+const CRONOS_L1_TOKEN_abi = require("./artifacts-era/Cronos.json").abi;
+const ERC20_L1_TOKEN_abi = require("../artifacts/contracts/erc20/MyERC20Token.sol/MyERC20Token.json").abi;
+const L1ERC20Bridge_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
 
 
 // Constants
+const CRO_L1_TOKEN_ADDRESS = process.env.CONTRACTS_L1_CRO_TOKEN_ADDRESS!;
 const ERC20_L1_TOKEN_ADDRESS = process.env.ERC20_L1_TOKEN_ADDRESS!
 const L1_ERC20_BRIDGE_ADDRESS =
     process.env.CONTRACTS_L1_ERC20_BRIDGE_IMPL_ADDR!;
@@ -46,22 +48,32 @@ async function main() {
     const l2wallet = new ZkWallet(PRIVATE_KEY, l2Provider, l1Provider);
     console.log("Using wallet address : ", l1wallet.address);
     // Contract instances
-    const ERC20_L1_TOKEN = new ethers.Contract(ERC20_L1_TOKEN_ADDRESS, ERC20_L1_TOKENFactory_abi, l1wallet);
+    const ERC20_L1_TOKEN = new ethers.Contract(ERC20_L1_TOKEN_ADDRESS, ERC20_L1_TOKEN_abi, l1wallet);
     console.log("Current ERC20 wallet balance on L1: ", ethers.formatEther(await ERC20_L1_TOKEN.balanceOf(l1wallet.address)));
-    const L1ERC20Bridge = new ethers.Contract(L1_ERC20_BRIDGE_ADDRESS, L1ERC20BridgeFactory_abi, l1wallet);
+    const L1ERC20Bridge = new ethers.Contract(L1_ERC20_BRIDGE_ADDRESS, L1ERC20Bridge_abi, l1wallet);
     console.log("L1 ERC20 Bridge contract address", await L1ERC20Bridge.getAddress());
 
     // Approve the bridge to spend ERC20 tokens
-    console.log("Approving Bridge for spending ERC20 token...");
+    console.log("Approving Bridge for spending ERC20 token on L1...");
     const amountTransferred = "1"
     let tx = await ERC20_L1_TOKEN.approve(await L1ERC20Bridge.getAddress(), ethers.parseEther(amountTransferred));
     await tx.wait();
     let allowance = await ERC20_L1_TOKEN.allowance(l1wallet.address, await L1ERC20Bridge.getAddress());
     console.log("ERC20 allowance: ", ethers.formatEther(allowance), "token");
 
-    // Estimate the cost of the deposit transaction
+    // Approve zksync to spend gas token
+    console.log("Approve ZKSync for spending gas token on L1...");
+    // const ZKSYNC_DIAMOND_PROXY = new ethers.Contract(ZKSYNC_ADDRESS, Zkutils.ZKSYNC_MAIN_ABI, l1wallet);
+    const CRO = new ethers.Contract(CRO_L1_TOKEN_ADDRESS, CRONOS_L1_TOKEN_abi, l1wallet);
+    tx = await CRO.approve(ZKSYNC_ADDRESS, ethers.parseEther("9999999999"));
+    await tx.wait();
+    allowance = await CRO.allowance(l1wallet.address, ZKSYNC_ADDRESS);
+    console.log("Gas token allowance allowance: ", ethers.formatEther(allowance), "CRO");
+
+    // Estimate the cost of the deposit transaction on L2
     const DEPOSIT_L2_GAS_LIMIT = 10_000_000;
     const gasPrice = await l2Provider.getGasPrice();
+    console.log("Current gas price on L2: ", ethers.formatUnits(gasPrice, "gwei"), "Gwei");
     const ZKSYNC_DIAMOND_PROXY = new ethers.Contract(ZKSYNC_ADDRESS, Zkutils.ZKSYNC_MAIN_ABI, l1wallet);
     const expectedCost = await ZKSYNC_DIAMOND_PROXY.l2TransactionBaseCost(
         gasPrice,
@@ -69,7 +81,7 @@ async function main() {
         Zkutils.DEFAULT_GAS_PER_PUBDATA_LIMIT
     );
 
-    console.log("Expected cost of deposit transaction: ", ethers.formatEther(expectedCost) , "ETH");
+    console.log("Expected cost of deposit transaction on L2: ", ethers.formatEther(expectedCost) , "ETH");
 
     // Call the bridge's deposit function
     //     function deposit(
@@ -84,6 +96,7 @@ async function main() {
 
     // Making the deposit
     console.log("Calling deposit function...");
+    console.log("Destination address: ", l2wallet.address);
     tx = await L1ERC20Bridge["deposit(address,address,uint256,uint256,uint256,address,uint256)"](
         l2wallet.address,
         ERC20_L1_TOKEN_ADDRESS,
@@ -98,7 +111,7 @@ async function main() {
     )
 
     let receipt = await tx.wait();
-    console.log(receipt);
+    console.log("Deposit transaction receipt: ", receipt);
 }
 
 main().catch(console.error);
