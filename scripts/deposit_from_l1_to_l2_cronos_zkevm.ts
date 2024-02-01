@@ -22,8 +22,8 @@ const L1ERC20Bridge_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
 // Constants
 const CRO_L1_TOKEN_ADDRESS = process.env.CONTRACTS_L1_CRO_TOKEN_ADDRESS!;
 const ERC20_L1_TOKEN_ADDRESS = process.env.ERC20_L1_TOKEN_ADDRESS!
-const L1_ERC20_BRIDGE_ADDRESS =
-    process.env.CONTRACTS_L1_ERC20_BRIDGE_IMPL_ADDR!;
+const CONTRACTS_L1_ERC20_BRIDGE_PROXY_ADDR =
+    process.env.CONTRACTS_L1_ERC20_BRIDGE_PROXY_ADDR!;
 const ZKSYNC_ADDRESS = process.env.CONTRACTS_DIAMOND_PROXY_ADDR!;
 
 // UNUSED
@@ -50,7 +50,7 @@ async function main() {
     // Contract instances
     const ERC20_L1_TOKEN = new ethers.Contract(ERC20_L1_TOKEN_ADDRESS, ERC20_L1_TOKEN_abi, l1wallet);
     console.log("Current ERC20 wallet balance on L1: ", ethers.formatEther(await ERC20_L1_TOKEN.balanceOf(l1wallet.address)));
-    const L1ERC20Bridge = new ethers.Contract(L1_ERC20_BRIDGE_ADDRESS, L1ERC20Bridge_abi, l1wallet);
+    const L1ERC20Bridge = new ethers.Contract(CONTRACTS_L1_ERC20_BRIDGE_PROXY_ADDR, L1ERC20Bridge_abi, l1wallet);
     console.log("L1 ERC20 Bridge contract address", await L1ERC20Bridge.getAddress());
 
     // Approve the bridge to spend ERC20 tokens
@@ -65,6 +65,7 @@ async function main() {
     console.log("Approve ZKSync for spending gas token on L1...");
     // const ZKSYNC_DIAMOND_PROXY = new ethers.Contract(ZKSYNC_ADDRESS, Zkutils.ZKSYNC_MAIN_ABI, l1wallet);
     const CRO = new ethers.Contract(CRO_L1_TOKEN_ADDRESS, CRONOS_L1_TOKEN_abi, l1wallet);
+    console.log("Current CRO balance on L1: ", ethers.formatEther(await CRO.balanceOf(l1wallet.address)));
     tx = await CRO.approve(ZKSYNC_ADDRESS, ethers.parseEther("9999999999"));
     await tx.wait();
     allowance = await CRO.allowance(l1wallet.address, ZKSYNC_ADDRESS);
@@ -72,13 +73,15 @@ async function main() {
 
     // Estimate the cost of the deposit transaction on L2
     const DEPOSIT_L2_GAS_LIMIT = 10_000_000;
-    const gasPrice = await l2Provider.getGasPrice();
-    console.log("Current gas price on L2: ", ethers.formatUnits(gasPrice, "gwei"), "Gwei");
+    const DEPOSIT_GAS_PER_PUBDATA_LIMIT = 800;
+    const feeData = await l1Provider.getFeeData()
+    const gasPrice = feeData.gasPrice? feeData.gasPrice:0
+    console.log("Current gas price on L1: ", ethers.formatUnits(gasPrice, "gwei"), "Gwei");
     const ZKSYNC_DIAMOND_PROXY = new ethers.Contract(ZKSYNC_ADDRESS, Zkutils.ZKSYNC_MAIN_ABI, l1wallet);
     const expectedCost = await ZKSYNC_DIAMOND_PROXY.l2TransactionBaseCost(
         gasPrice,
         DEPOSIT_L2_GAS_LIMIT,
-        Zkutils.DEFAULT_GAS_PER_PUBDATA_LIMIT
+        DEPOSIT_GAS_PER_PUBDATA_LIMIT
     );
 
     console.log("Expected cost of deposit transaction on L2: ", ethers.formatEther(expectedCost) , "ETH");
@@ -100,11 +103,11 @@ async function main() {
     tx = await L1ERC20Bridge["deposit(address,address,uint256,uint256,uint256,address,uint256)"](
         l2wallet.address,
         ERC20_L1_TOKEN_ADDRESS,
-        ethers.parseEther("100"),
-        10_000_000,
-        800,
-        l2wallet.address,
         ethers.parseEther(amountTransferred),
+        DEPOSIT_L2_GAS_LIMIT,
+        DEPOSIT_GAS_PER_PUBDATA_LIMIT,
+        l2wallet.address,
+        expectedCost,
         {
             gasLimit: 410000,
         },
