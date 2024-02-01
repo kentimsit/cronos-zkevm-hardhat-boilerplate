@@ -1,6 +1,7 @@
-// WORK IN PROGRESS
 // Run with:
-// npm run deposit_l1_to_l2
+// npx ts-node scripts/bridge_era.ts
+
+// The main script deposits ERC20 tokens from to L1 (Ethereum Sepolia) to L2 (zkSync Era Sepolia)
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -12,8 +13,11 @@ import {
 } from "zksync-ethers";
 import { ethers } from "ethers";
 
-async function main() {
-    // Set up
+/**
+ * This function deposits ERC20 tokens from L1 to L2 using the provided wallet's private key.
+ * It waits for the deposit transaction to be processed on L1 and L2 before completing.
+ */
+async function deposit_erc20_l1_to_l2() {
     const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY
         ? process.env.WALLET_PRIVATE_KEY
         : "";
@@ -51,4 +55,5 @@ async function main() {
     console.log("Deposit committed");
 }
 
-main().catch(console.error);
+// Select the function to run here
+deposit_erc20_l1_to_l2().catch(console.error);
