@@ -2,6 +2,7 @@
 // npx ts-node scripts/bridge_era.ts
 
 // The main script deposits ERC20 tokens from to L1 (Ethereum Sepolia) to L2 (zkSync Era Sepolia)
+// This script is for reference only, is not suitable for Cronos zkEVM network
 
 import * as dotenv from "dotenv";
 dotenv.config();
