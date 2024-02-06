@@ -209,7 +209,7 @@ async function deposit_erc20_l1_to_l2(
             ethers.formatUnits(gasPrice, "gwei"),
             "Gwei"
         );
-        const expectedCost =
+        let expectedCost =
             await sharedObject.l1ZkSyncDiamondProxyContract.l2TransactionBaseCost(
                 gasPrice,
                 DEPOSIT_L2_GAS_LIMIT,
@@ -221,8 +221,9 @@ async function deposit_erc20_l1_to_l2(
             ethers.formatEther(expectedCost),
             "CRO"
         );
-
-        // Approve zksync to spend gas token
+        // Gross up expectedCost by 20%
+        expectedCost = (expectedCost * BigInt(120)) / BigInt(100);
+        // Approve zksync to spend gas token on L1
         console.log("Approve ZKSync for spending gas token on L1...");
         tx = await sharedObject.l1CroContract.approve(
             await sharedObject.l1ZkSyncDiamondProxyContract.getAddress(),
@@ -313,6 +314,100 @@ async function withdraw_erc20_l2_to_l1(
         console.log("Transaction hash on L2: ", receipt.hash);
         return receipt.hash;
         // TODO: Finalize withdrawal on L1
+    }
+    return "";
+}
+
+async function deposit_cro_l1_to_l2(
+    sharedObject: SharedObject,
+    amountTransferred: number
+): Promise<string> {
+    if (
+        sharedObject.l1Erc20Contract &&
+        sharedObject.l1Erc20BridgeContract &&
+        sharedObject.l1wallet
+    ) {
+        // Estimate the cost of the deposit transaction on L2
+        const DEPOSIT_L2_GAS_LIMIT = 10_000_000;
+        const feeData = await sharedObject.l1Provider.getFeeData();
+        const gasPrice = feeData.gasPrice ? feeData.gasPrice : 0;
+        console.log(
+            "Current gas price on L1: ",
+            ethers.formatUnits(gasPrice, "gwei"),
+            "Gwei"
+        );
+        let expectedCost =
+            await sharedObject.l1ZkSyncDiamondProxyContract.l2TransactionBaseCost(
+                gasPrice,
+                DEPOSIT_L2_GAS_LIMIT,
+                Zkutils.DEFAULT_GAS_PER_PUBDATA_LIMIT
+            );
+
+        console.log(
+            "Expected cost of deposit transaction on L2: ",
+            ethers.formatEther(expectedCost),
+            "CRO"
+        );
+
+        // Approve the bridge to spend CRO tokens
+        // THe amount to approve is the sum of amount to be transferred plus 120% of the expected cost
+        const amountToApprove =
+            ethers.parseEther(amountTransferred.toString()) +
+            (expectedCost * BigInt(120)) / BigInt(100);
+        console.log(
+            "CRO token address on L1:",
+            await sharedObject.l1CroContract.getAddress()
+        );
+        console.log("Approving zkSync for spending CRO token on L1...");
+        let tx = await sharedObject.l1CroContract.approve(
+            await sharedObject.l1ZkSyncDiamondProxyContract.getAddress(),
+            amountToApprove
+        );
+        await tx.wait();
+        // Check allowance
+        let allowance = await sharedObject.l1CroContract.allowance(
+            sharedObject.l1wallet.address,
+            await sharedObject.l1ZkSyncDiamondProxyContract.getAddress()
+        );
+        console.log("CRO allowance: ", ethers.formatEther(allowance), "CRO");
+
+        // Making the deposit
+        // function requestL2Transaction(
+        //     L2Transaction memory _l2tx,
+        //     bytes calldata _calldata,
+        //     bytes[] calldata _factoryDeps,
+        //     address _refundRecipient,
+        //     uint256 _baseAmount
+        // ) external payable nonReentrant senderCanCallFunction(s.allowList) returns (bytes32 canonicalTxHash) {
+        console.log("Calling deposit function...");
+        console.log("Destination address: ", sharedObject.l2wallet.address);
+        console.log("Amount: ", amountTransferred.toString(), "CRO");
+        console.log("L2 transaction request", {
+            l2Contract: sharedObject.l2wallet.address,
+            l2Value: 0,
+            l2GasLimit: 1_000_000,
+            l2GasPerPubdataByteLimit: 800,
+        });
+        tx =
+            await sharedObject.l1ZkSyncDiamondProxyContract.requestL2Transaction(
+                {
+                    l2Contract: sharedObject.l2wallet.address,
+                    l2Value: 0,
+                    l2GasLimit: 1_000_000,
+                    l2GasPerPubdataByteLimit: 800,
+                },
+                "0x",
+                [],
+                sharedObject.l2wallet.address,
+                ethers.parseEther(amountTransferred.toString()),
+                {
+                    gasLimit: 210000,
+                }
+            );
+
+        let receipt = await tx.wait();
+        console.log("Deposit transaction hash: ", receipt.hash);
+        return receipt.hash;
     }
     return "";
 }
@@ -409,7 +504,11 @@ async function main_dev() {
         //     console.error
         // );
         // await get_l2tx_from_l1tx(sharedObject, hash).catch(console.error);
-        const l2txhash = await withdraw_erc20_l2_to_l1(
+        // const l2txhash = await withdraw_erc20_l2_to_l1(
+        //     sharedObject,
+        //     amountTransferred
+        // ).catch(console.error);
+        const l1txhash = await deposit_cro_l1_to_l2(
             sharedObject,
             amountTransferred
         ).catch(console.error);
