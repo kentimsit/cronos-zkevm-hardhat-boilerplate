@@ -312,6 +312,7 @@ async function withdraw_erc20_l2_to_l1(
         const receipt = await withdrawL2.wait();
         console.log("Transaction hash on L2: ", receipt.hash);
         return receipt.hash;
+        // TODO: Finalize withdrawal on L1
     }
     return "";
 }
