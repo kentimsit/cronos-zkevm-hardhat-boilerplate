@@ -10,8 +10,10 @@ import {
     Wallet as ZkWallet,
     Provider as ZkProvider,
     utils as Zkutils,
+    types as ZkTypes,
 } from "zksync-ethers";
 import { ethers } from "ethers";
+import { l2 } from "../typechain-types/@matterlabs/zksync-contracts";
 
 // Import JSON ABIs
 const CRO_L1_TOKEN_abi = require("./artifacts-era/Cronos.json").abi;
@@ -169,7 +171,7 @@ async function getBalances(shareObject: SharedObject): Promise<void> {
 async function deposit_erc20_l1_to_l2(
     sharedObject: SharedObject,
     amountTransferred: number
-) {
+): Promise<string> {
     if (
         sharedObject.l1Erc20Contract &&
         sharedObject.l1Erc20BridgeContract &&
@@ -270,7 +272,48 @@ async function deposit_erc20_l1_to_l2(
 
         let receipt = await tx.wait();
         console.log("Deposit transaction hash: ", receipt.hash);
+        return receipt.hash;
     }
+    return "";
+}
+
+async function get_l2tx_from_l1tx(
+    sharedObject: SharedObject,
+    hash: string
+): Promise<string> {
+    const l1TxResponse = await sharedObject.l1Provider.getTransaction(hash);
+    if (l1TxResponse) {
+        const l2TxResponse =
+            await sharedObject.l2Provider.getL2TransactionFromPriorityOp(
+                l1TxResponse
+            );
+        console.log("l2TxResponse hash: ", l2TxResponse.hash);
+        return l2TxResponse.hash;
+    }
+    return "";
+}
+
+async function withdraw_erc20_l2_to_l1(
+    sharedObject: SharedObject,
+    amountTransferred: number
+) {
+    // Withdraw ERC20 from L2 to L1
+    console.log("withdrawing ERC20....");
+    const l2Erc20Address = await sharedObject.l2Erc20Contract?.getAddress();
+    console.log("ERC20 address on L2:", l2Erc20Address);
+    if (l2Erc20Address) {
+        console.log("Recipient:", sharedObject.l1wallet.address);
+        const withdrawL2 = await sharedObject.l2wallet.withdraw({
+            token: l2Erc20Address,
+            amount: ethers.parseEther(amountTransferred.toString()),
+            to: sharedObject.l1wallet.address,
+        });
+
+        const receipt = await withdrawL2.wait();
+        console.log("Transaction hash on L2: ", receipt.hash);
+        return receipt.hash;
+    }
+    return "";
 }
 
 async function withdraw_cro_l2_to_l1(
@@ -289,6 +332,7 @@ async function withdraw_cro_l2_to_l1(
 
     const receipt = await withdrawL2.wait();
     console.log("Transaction hash on L2: ", receipt.hash);
+    return receipt.hash;
 }
 
 // It may take a while before the withdrawal can be finalized on L1
@@ -335,22 +379,47 @@ async function finalize_withdrawal_cro_l2_to_l1(
 async function main() {
     // User inputs
     const amountTransferred = 1;
-    const hash = "";
+    const sharedObject = await getSharedObject().catch(console.error);
+    if (sharedObject) {
+        await getBalances(sharedObject).catch(console.error);
+        const l1hash = await deposit_erc20_l1_to_l2(
+            sharedObject,
+            amountTransferred
+        ).catch(console.error);
+        if (l1hash) {
+            await get_l2tx_from_l1tx(sharedObject, l1hash).catch(console.error);
+        }
+        await getBalances(sharedObject).catch(console.error);
+    }
+}
+
+async function main_dev() {
+    // User inputs
+    const amountTransferred = 1;
+    const hash =
+        "0xbf78bd9b655325c5c752e32c00e4851aa68b7160f07d270da60f3f3279065a0c";
 
     // Scripts
     const sharedObject = await getSharedObject().catch(console.error);
     if (sharedObject) {
         await getBalances(sharedObject).catch(console.error);
         // Select the function to run here
-        await deposit_erc20_l1_to_l2(sharedObject, amountTransferred).catch(
-            console.error
-        );
+        // await deposit_erc20_l1_to_l2(sharedObject, amountTransferred).catch(
+        //     console.error
+        // );
+        // await get_l2tx_from_l1tx(sharedObject, hash).catch(console.error);
+        const l2txhash = await withdraw_erc20_l2_to_l1(
+            sharedObject,
+            amountTransferred
+        ).catch(console.error);
         // await withdraw_cro_l2_to_l1(sharedObject, amountTransferred).catch(
         //     console.error
         // );
-        // await finalize_withdrawal_cro_l2_to_l1(sharedObject, hash).catch(console.error);
+        // await finalize_withdrawal_cro_l2_to_l1(sharedObject, hash).catch(
+        //     console.error
+        // );
         await getBalances(sharedObject).catch(console.error);
     }
 }
 
-main().catch(console.error);
+main_dev().catch(console.error);

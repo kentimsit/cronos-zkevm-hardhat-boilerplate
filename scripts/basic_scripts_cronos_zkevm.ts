@@ -151,7 +151,7 @@ async function getL2AddressofL1Token(
 // Main script
 async function main() {
     const hash =
-        "0xe9874d99980f4acb6439648e42efdb9597020f81a5e87c81e8eeb3f5654cf6e7";
+        "0xbf78bd9b655325c5c752e32c00e4851aa68b7160f07d270da60f3f3279065a0c";
 
     const sharedObject = await getSharedObject().catch(console.error);
     if (sharedObject) {
