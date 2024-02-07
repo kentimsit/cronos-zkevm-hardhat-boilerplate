@@ -16,17 +16,22 @@ import { ethers } from "ethers";
 import { l2 } from "../typechain-types/@matterlabs/zksync-contracts";
 
 // Import JSON ABIs
-const CRO_L1_TOKEN_abi = require("./artifacts-era/Cronos.json").abi;
+const CRO_L1_TOKEN_abi = require("./artifacts-cronoszkevm/Cronos.json").abi;
 const ERC20_L1_TOKEN_abi =
     require("../artifacts/contracts/erc20/MyERC20Token.sol/MyERC20Token.json").abi;
-const L1ERC20Bridge_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
-const ERC20_L2_TOKEN_abi = require("./artifacts-era/L2StandardERC20.json").abi;
-const L2ERC20Bridge_abi = require("./artifacts-era/L2ERC20Bridge.json").abi;
-const ZKSYNC_abi = require("./artifacts-era/IZkSync.json").abi;
+const ERC20_L2_TOKEN_abi =
+    require("./artifacts-cronoszkevm/L2StandardERC20.json").abi;
+const L1ERC20Bridge_abi =
+    require("./artifacts-cronoszkevm/L1ERC20Bridge.json").abi;
+const L2ERC20Bridge_abi =
+    require("./artifacts-cronoszkevm/L2ERC20Bridge.json").abi;
+const ZKSYNC_abi = require("./artifacts-cronoszkevm/IZkSync.json").abi;
 
 // Define the type of shared object
 type SharedObject = {
     l1Provider: ethers.JsonRpcProvider;
+    l1MaxFeePerGas: bigint;
+    l1MaxPriorityFeePerGas: bigint;
     l2Provider: ZkProvider;
     l1wallet: ethers.Wallet;
     l2wallet: ZkWallet;
@@ -35,8 +40,8 @@ type SharedObject = {
     l1Erc20Contract: ethers.Contract;
     l2Erc20Contract: ethers.Contract | null;
     l1Erc20BridgeContract: ethers.Contract;
-    l1ZkSyncDiamondProxyContract: ethers.Contract;
     l2Erc20BridgeContract: ethers.Contract;
+    l1ZkSyncDiamondProxyContract: ethers.Contract;
 };
 
 /**
@@ -114,6 +119,8 @@ async function getSharedObject(): Promise<SharedObject> {
 
     return {
         l1Provider,
+        l1MaxFeePerGas: ethers.parseUnits("50", "gwei"),
+        l1MaxPriorityFeePerGas: ethers.parseUnits("1", "gwei"),
         l2Provider,
         l1wallet,
         l2wallet,
@@ -122,8 +129,8 @@ async function getSharedObject(): Promise<SharedObject> {
         l1Erc20Contract,
         l2Erc20Contract,
         l1Erc20BridgeContract,
-        l1ZkSyncDiamondProxyContract,
         l2Erc20BridgeContract,
+        l1ZkSyncDiamondProxyContract,
     };
 }
 
@@ -206,7 +213,11 @@ async function deposit_erc20_l1_to_l2(
         // Check allowance
         let allowance = await sharedObject.l1Erc20Contract.allowance(
             sharedObject.l1wallet.address,
-            await sharedObject.l1Erc20BridgeContract.getAddress()
+            await sharedObject.l1Erc20BridgeContract.getAddress(),
+            {
+                maxFeePerGas: sharedObject.l1MaxFeePerGas,
+                maxPriorityFeePerGas: sharedObject.l1MaxPriorityFeePerGas,
+            }
         );
         console.log(
             "ERC20 allowance: ",
@@ -283,6 +294,8 @@ async function deposit_erc20_l1_to_l2(
             expectedCost,
             {
                 gasLimit: 410000,
+                maxFeePerGas: sharedObject.l1MaxFeePerGas,
+                maxPriorityFeePerGas: sharedObject.l1MaxPriorityFeePerGas,
             }
         );
 
@@ -293,6 +306,12 @@ async function deposit_erc20_l1_to_l2(
     return "";
 }
 
+/**
+ * Retrieves the L2 transaction hash from the given L1 transaction hash that initiated a Priority Op
+ * @param sharedObject - The shared object containing the L1 and L2 providers.
+ * @param hash - The hash of the L1 transaction.
+ * @returns The hash of the corresponding L2 transaction, or an empty string if not found.
+ */
 async function get_l2tx_from_l1tx(
     sharedObject: SharedObject,
     hash: string
@@ -309,6 +328,13 @@ async function get_l2tx_from_l1tx(
     return "";
 }
 
+/**
+ * Withdraws ERC20 tokens from L2 to L1.
+ *
+ * @param sharedObject - The shared object containing the necessary contracts and wallet.
+ * @param amountTransferred - The amount of tokens to be transferred.
+ * @returns The transaction hash on L2.
+ */
 async function withdraw_erc20_l2_to_l1(
     sharedObject: SharedObject,
     amountTransferred: number
@@ -319,12 +345,12 @@ async function withdraw_erc20_l2_to_l1(
     console.log("ERC20 address on L2:", l2Erc20Address);
     if (l2Erc20Address) {
         console.log("Recipient:", sharedObject.l1wallet.address);
-        const withdrawL2 = await  sharedObject.l2Erc20BridgeContract[
+        const withdrawL2 = await sharedObject.l2Erc20BridgeContract[
             "withdraw(address,address,uint256)"
-            ](
+        ](
             sharedObject.l1wallet.address,
             l2Erc20Address,
-            ethers.parseEther(amountTransferred.toString()),
+            ethers.parseEther(amountTransferred.toString())
         );
 
         const receipt = await withdrawL2.wait();
@@ -335,6 +361,13 @@ async function withdraw_erc20_l2_to_l1(
     return "";
 }
 
+/**
+ * Deposits CRO tokens from Layer 1 to Layer 2.
+ *
+ * @param sharedObject - The shared object containing the necessary contracts and wallets.
+ * @param amountTransferred - The amount of CRO tokens to be transferred.
+ * @returns The transaction hash of the deposit transaction.
+ */
 async function deposit_cro_l1_to_l2(
     sharedObject: SharedObject,
     amountTransferred: number
@@ -344,6 +377,7 @@ async function deposit_cro_l1_to_l2(
         sharedObject.l1Erc20BridgeContract &&
         sharedObject.l1wallet
     ) {
+        console.log("Depositing CRO from L1 to L2....");
         // Estimate the cost of the deposit transaction on L2
         const DEPOSIT_L2_GAS_LIMIT = 10_000_000;
         const feeData = await sharedObject.l1Provider.getFeeData();
@@ -378,8 +412,13 @@ async function deposit_cro_l1_to_l2(
         console.log("Approving zkSync for spending CRO token on L1...");
         let tx = await sharedObject.l1CroContract.approve(
             await sharedObject.l1ZkSyncDiamondProxyContract.getAddress(),
-            amountToApprove
+            amountToApprove,
+            {
+                maxFeePerGas: sharedObject.l1MaxFeePerGas,
+                maxPriorityFeePerGas: sharedObject.l1MaxPriorityFeePerGas,
+            }
         );
+        console.log("Tx hash: ", tx.hash);
         await tx.wait();
         // Check allowance
         let allowance = await sharedObject.l1CroContract.allowance(
@@ -418,10 +457,13 @@ async function deposit_cro_l1_to_l2(
                 sharedObject.l2wallet.address,
                 ethers.parseEther(amountTransferred.toString()),
                 {
-                    gasLimit: 210000,
+                    gasLimit: 2100000,
+                    maxFeePerGas: sharedObject.l1MaxFeePerGas,
+                    maxPriorityFeePerGas: sharedObject.l1MaxPriorityFeePerGas,
                 }
             );
 
+        console.log("Tx hash: ", tx.hash);
         let receipt = await tx.wait();
         console.log("Deposit transaction hash: ", receipt.hash);
         return receipt.hash;
@@ -429,6 +471,13 @@ async function deposit_cro_l1_to_l2(
     return "";
 }
 
+/**
+ * Withdraws CRO from L2 to L1.
+ *
+ * @param sharedObject - The shared object containing necessary information.
+ * @param amountTransferred - The amount of CRO transferred.
+ * @returns The transaction hash on L2.
+ */
 async function withdraw_cro_l2_to_l1(
     sharedObject: SharedObject,
     amountTransferred: number
@@ -448,10 +497,16 @@ async function withdraw_cro_l2_to_l1(
     return receipt.hash;
 }
 
-// It may take a while before the withdrawal can be finalized on L1
-// Use the basic script to check the status of the withdrawal transaction on L2
-// In transactionDetails, the status must be 'verified' before the withdrawal can be finalized on L1
-// TCRO contract on L1: https://sepolia.etherscan.io/token/0x1c815aca8daacdf46805fbFB9F08abD1D614773D
+/**
+ * Finalizes the withdrawal of CRO from Layer 2 to Layer 1.
+ *
+ * It may take a while before the withdrawal can be finalized on L1
+ * Use the basic script to check the status of the withdrawal transaction on L2
+ * In transactionDetails, the status must be 'verified' before the withdrawal can be finalized on L1
+ * TCRO contract on L1: https://sepolia.etherscan.io/token/0x1c815aca8daacdf46805fbFB9F08abD1D614773D
+ * @param sharedObject - The shared object containing the necessary contracts and wallets.
+ * @param hash - The hash of the withdrawal transaction on Layer 2.
+ */
 async function finalize_withdrawal_cro_l2_to_l1(
     sharedObject: SharedObject,
     hash: string
@@ -506,11 +561,13 @@ async function main() {
     }
 }
 
+/*
+ * This main_dev script is used for testing the various functions in the script
+ */
 async function main_dev() {
     // User inputs
     const amountTransferred = 1;
-    const hash =
-        "0xbf78bd9b655325c5c752e32c00e4851aa68b7160f07d270da60f3f3279065a0c";
+    const hash = "";
 
     // Scripts
     const sharedObject = await getSharedObject().catch(console.error);
@@ -525,10 +582,10 @@ async function main_dev() {
         //     sharedObject,
         //     amountTransferred
         // ).catch(console.error);
-        const l1txhash = await deposit_cro_l1_to_l2(
-            sharedObject,
-            amountTransferred
-        ).catch(console.error);
+        // const l1txhash = await deposit_cro_l1_to_l2(
+        //     sharedObject,
+        //     amountTransferred
+        // ).catch(console.error);
         // await withdraw_cro_l2_to_l1(sharedObject, amountTransferred).catch(
         //     console.error
         // );
@@ -539,4 +596,4 @@ async function main_dev() {
     }
 }
 
-main_dev().catch(console.error);
+main().catch(console.error);

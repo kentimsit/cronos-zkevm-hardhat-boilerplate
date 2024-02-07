@@ -14,10 +14,11 @@ import {
 import { ethers } from "ethers";
 
 // Import JSON ABIs
-const CRO_L1_TOKEN_abi = require("./artifacts-era/Cronos.json").abi;
+const CRO_L1_TOKEN_abi = require("./artifacts-cronoszkevm/Cronos.json").abi;
 const ERC20_L1_TOKEN_abi =
     require("../artifacts/contracts/erc20/MyERC20Token.sol/MyERC20Token.json").abi;
-const L1ERC20Bridge_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
+const L1ERC20Bridge_abi =
+    require("./artifacts-cronoszkevm/L1ERC20Bridge.json").abi;
 
 // Define the type of shared object
 type SharedObject = {
@@ -101,6 +102,44 @@ async function getSharedObject(): Promise<SharedObject> {
     };
 }
 
+async function sendL1TransactionWithNonce(
+    sharedObject: SharedObject,
+    nonce: number,
+    maxFeePerGasGwei: number = 0,
+    maxPriorityFeePerGasGwei: number = 0
+) {
+    console.log(
+        "Max fee per gas: ",
+        ethers.parseUnits(maxFeePerGasGwei.toString(), "gwei")
+    );
+    console.log(
+        "Max priority fee per gas: ",
+        ethers.parseUnits(maxPriorityFeePerGasGwei.toString(), "gwei")
+    );
+    const tx = await sharedObject.l1wallet.sendTransaction({
+        to: sharedObject.l1wallet.address,
+        value: ethers.parseEther("0"),
+        nonce: nonce,
+        maxFeePerGas: ethers.parseUnits(maxFeePerGasGwei.toString(), "gwei"),
+        maxPriorityFeePerGas: ethers.parseUnits(
+            maxPriorityFeePerGasGwei.toString(),
+            "gwei"
+        ),
+    });
+    console.log("Transaction hash: ", tx.hash);
+}
+
+async function checkL1TransactionStatus(
+    sharedObject: SharedObject,
+    hash: string
+) {
+    const l1Transaction = await sharedObject.l1Provider.getTransaction(hash);
+    console.log("Transaction: ", l1Transaction);
+    const l1TransactionReceipt =
+        await sharedObject.l1Provider.getTransactionReceipt(hash);
+    console.log("Transaction receipt: ", l1TransactionReceipt);
+}
+
 /**
  * Checks the status of an L2 transaction.
  * @param sharedObject - The shared object containing the L2 provider.
@@ -150,16 +189,17 @@ async function getL2AddressofL1Token(
 
 // Main script
 async function main() {
-    const hash =
-        "0xbf78bd9b655325c5c752e32c00e4851aa68b7160f07d270da60f3f3279065a0c";
+    const hash = "";
 
     const sharedObject = await getSharedObject().catch(console.error);
     if (sharedObject) {
+        // await sendL1TransactionWithNonce(sharedObject, 83, 130, 120);
         // await getL2AddressofL1Token(
         //     sharedObject,
         //     process.env.ERC20_L1_ADDRESS!
         // );
-        await checkL2TransactionStatus(sharedObject, hash).catch(console.error);
+        // await checkL1TransactionStatus(sharedObject, hash).catch(console.error);
+        // await checkL2TransactionStatus(sharedObject, hash).catch(console.error);
     }
 }
 
