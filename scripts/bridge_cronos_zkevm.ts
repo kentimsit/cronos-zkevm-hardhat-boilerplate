@@ -20,6 +20,9 @@ const CRO_L1_TOKEN_abi = require("./artifacts-era/Cronos.json").abi;
 const ERC20_L1_TOKEN_abi =
     require("../artifacts/contracts/erc20/MyERC20Token.sol/MyERC20Token.json").abi;
 const L1ERC20Bridge_abi = require("./artifacts-era/L1ERC20Bridge.json").abi;
+const ERC20_L2_TOKEN_abi = require("./artifacts-era/L2StandardERC20.json").abi;
+const L2ERC20Bridge_abi = require("./artifacts-era/L2ERC20Bridge.json").abi;
+const ZKSYNC_abi = require("./artifacts-era/IZkSync.json").abi;
 
 // Define the type of shared object
 type SharedObject = {
@@ -33,6 +36,7 @@ type SharedObject = {
     l2Erc20Contract: ethers.Contract | null;
     l1Erc20BridgeContract: ethers.Contract;
     l1ZkSyncDiamondProxyContract: ethers.Contract;
+    l2Erc20BridgeContract: ethers.Contract;
 };
 
 /**
@@ -75,17 +79,8 @@ async function getSharedObject(): Promise<SharedObject> {
         ERC20_L1_TOKEN_abi,
         l1wallet
     );
-    // Test ERC20 token on Cronos zkEVM L2 Testnet
-    // This token is only created by the bridge after the first token has been deposited from L1 to L2
-    let l2Erc20Contract: ethers.Contract | null = null;
-    if (ERC20_L2_ADDRESS) {
-        l2Erc20Contract = new ethers.Contract(
-            ERC20_L2_ADDRESS,
-            ERC20_L1_TOKEN_abi,
-            l2wallet
-        );
-    }
-    // L1/L2 Bridge contract for ERC20 on L1
+
+    // L1 Bridge contract for ERC20 on L1
     const l1Erc20BridgeContract = new ethers.Contract(
         BRIDGE_ERC20_L1_PROXY_ADDRESS,
         L1ERC20Bridge_abi,
@@ -94,8 +89,27 @@ async function getSharedObject(): Promise<SharedObject> {
     // ZkSync Diamond Proxy contract on L1
     const l1ZkSyncDiamondProxyContract = new ethers.Contract(
         ZKSYNC_DIAMOND_PROXY_ADDRESS,
-        Zkutils.ZKSYNC_MAIN_ABI,
+        ZKSYNC_abi,
         l1wallet
+    );
+
+    // Test ERC20 token on Cronos zkEVM L2 Testnet
+    // This token is only created by the bridge after the first token has been deposited from L1 to L2
+    let l2Erc20Contract: ethers.Contract | null = null;
+    if (ERC20_L2_ADDRESS) {
+        l2Erc20Contract = new ethers.Contract(
+            ERC20_L2_ADDRESS,
+            ERC20_L2_TOKEN_abi,
+            l2wallet
+        );
+    }
+
+    const l2bridgeAddress = await l1Erc20BridgeContract.l2Bridge();
+    // L2 Bridge contract for ERC20 on L2
+    const l2Erc20BridgeContract = new ethers.Contract(
+        l2bridgeAddress,
+        L2ERC20Bridge_abi,
+        l2wallet
     );
 
     return {
@@ -109,6 +123,7 @@ async function getSharedObject(): Promise<SharedObject> {
         l2Erc20Contract,
         l1Erc20BridgeContract,
         l1ZkSyncDiamondProxyContract,
+        l2Erc20BridgeContract,
     };
 }
 
@@ -304,11 +319,13 @@ async function withdraw_erc20_l2_to_l1(
     console.log("ERC20 address on L2:", l2Erc20Address);
     if (l2Erc20Address) {
         console.log("Recipient:", sharedObject.l1wallet.address);
-        const withdrawL2 = await sharedObject.l2wallet.withdraw({
-            token: l2Erc20Address,
-            amount: ethers.parseEther(amountTransferred.toString()),
-            to: sharedObject.l1wallet.address,
-        });
+        const withdrawL2 = await  sharedObject.l2Erc20BridgeContract[
+            "withdraw(address,address,uint256)"
+            ](
+            sharedObject.l1wallet.address,
+            l2Erc20Address,
+            ethers.parseEther(amountTransferred.toString()),
+        );
 
         const receipt = await withdrawL2.wait();
         console.log("Transaction hash on L2: ", receipt.hash);
