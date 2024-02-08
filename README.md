@@ -43,14 +43,11 @@ To deploy a smart contract to Cronos zkEVM Testnet, select `cronosZkevmSepoliaTe
 The frequently used shell commands are:
 
 ```bash
-
-# Deploy on zkSync Sepolia (for reference)
-npx hardhat deploy-zksync --network zkSyncSepoliaTestnet --script erc20/deploy.ts
-
 # Deploy on Cronos zkEVM Testnet
 npx hardhat deploy-zksync --network cronosZkevmSepoliaTestnet --script erc20/deploy.ts
-
 ```
+
+The deployment script performs the contract verification so that the smart contract's code and read/write interfaces can be seen on the https://zkevm-t0.cronos.org/explorer/address/0xAddress#contract block explorer web page.
 
 ## Deploy a token on Ethereum and deposit tokens to L2
 
