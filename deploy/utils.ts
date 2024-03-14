@@ -109,10 +109,13 @@ export const deployContract = async (
         });
 
     // Estimate contract deployment fee
-    const deploymentFee = await deployer.estimateDeployFee(
+    let deploymentFee = await deployer.estimateDeployFee(
         artifact,
         constructorArguments || []
     );
+    // Gross up deploymentFee Bigint by 50% to avoid "out of gas" errors. The result must be a bigint
+    deploymentFee = (deploymentFee * BigInt(150)) / BigInt(100);
+
     log(`Estimated deployment cost: ${ethers.formatEther(deploymentFee)} CRO`);
 
     // Check if the wallet has enough balance
