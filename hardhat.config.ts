@@ -26,7 +26,7 @@ const config: HardhatUserConfig = {
                 "https://explorer.sepolia.era.zksync.dev/contract_verification",
         },
         cronosZkevmSepoliaTestnet: {
-            url: "https://rpc-hyperchain-t0.cronos.org",
+            url: "https://rpc-zkevm-t0.cronos.org",
             ethNetwork: "sepolia",
             zksync: true,
             verifyURL: "https://zkevm-t0.cronos.org/contract_verification",
