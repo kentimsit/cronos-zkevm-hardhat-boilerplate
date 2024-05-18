@@ -10,6 +10,7 @@ import "@matterlabs/hardhat-zksync-verify";
 import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
+    defaultNetwork: "cronosZkevmSepoliaTestnet",
     networks: {
         zkSyncMainnet: {
             url: "https://mainnet.era.zksync.io",
