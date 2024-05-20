@@ -11,7 +11,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "ethers": "^6.12.1",
-    "zksync-ethers": "^6.7.1"
+    "zksync-ethers": "6.8.0-beta.4"
   },
   "devDependencies": {
     "@matterlabs/hardhat-zksync-deploy": "^1.3.0",
