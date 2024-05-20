@@ -5,14 +5,17 @@ May 2024).
 
 # Set-up
 
-As zksync-ethers v6.8.0-beta.4 is not yet an official release and creates some dependency conflicts, using npm install --force to install the dependencies is recommended.
+As zksync-ethers v6.8.0-beta.4 is not yet an official release and creates some dependency conflicts,
+using `npm install --force` to install the dependencies is recommended.
 
 This repository uses Node 20 with Typescript and the following packages:
 
-- zksync-ethers (v6.8.0-beta.4 for now, this will be updated when the the new release is official) and ethers (v6) (see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
+- zksync-ethers (v6.8.0-beta.4 for now, this will be updated when the the new release is official) and ethers (v6) (
+  see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
 - hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
 
-It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then migrated to be compatible with ZK Stack using the instructions
+It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then
+migrated to be compatible with ZK Stack using the instructions
 described in the ZK Sync documentation ("migration guide"). See `package.json`  for the full list of dependencies.
 
 # Basic blockchain reading and writing operations
@@ -26,24 +29,28 @@ The basic reading and writing scripts are in the /scripts folder:
 
 # Hardhat config
 
-The settings for the Cronos zkEVM testnet network are as follows: 
+The settings for the Cronos zkEVM testnet network are as follows:
 
 ```json lines
 {
-    cronosZkEvmTestnet: {
-      url: "https://testnet.zkevm.cronos.org",
-      ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
-      zksync: true,
-      verifyURL: "https://testnet.zkevm.cronos.org/contract_verification",
-    }
+  cronosZkEvmTestnet: {
+    url: "https://testnet.zkevm.cronos.org",
+    ethNetwork: "sepolia",
+    // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+    zksync: true,
+    verifyURL: "https://testnet.zkevm.cronos.org/contract_verification",
+  }
 }
 ```
 
-The Cronos zkEVM contract verification URL is: https://testnet.zkevm.cronos.org/contract_verification. It supports Solidity up to version 0.8.25, and Zksolc up to version 1.4.1.
+The Cronos zkEVM contract verification URL is: https://testnet.zkevm.cronos.org/contract_verification. It supports
+Solidity up to version 0.8.25, and Zksolc up to version 1.4.1.
 
 # Smart contracts
 
-The smart contracts in this repository are written in Solidity and are based on the OpenZeppelin library. Considering that `@matterlabs/hardhat-zksync-upgradable` does not currently support OpenZeppelin libraries above v4.9.5, we are only using `@openzeppelin/contracts-upgradeable@4.9.5` and `@openzeppelin/contracts@4.9.5`.
+The smart contracts in this repository are written in Solidity and are based on the OpenZeppelin library. Considering
+that `@matterlabs/hardhat-zksync-upgradable` does not currently support OpenZeppelin libraries above v4.9.5, we are only
+using `@openzeppelin/contracts-upgradeable@4.9.5` and `@openzeppelin/contracts@4.9.5`.
 
 
 

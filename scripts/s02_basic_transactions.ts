@@ -2,8 +2,20 @@
 // npx ts-node scripts/s02_basic_transactions.ts
 
 import * as dotenv from "dotenv";
-import {Provider as ZkProvider, Wallet as ZkWallet,} from "zksync-ethers";
-import {ethers} from "ethers";
+import {Provider as ZkProvider, Wallet as ZkWallet} from "zksync-ethers";
+import {BigNumberish, ethers} from "ethers";
+import {Address} from "zksync-ethers/build/types";
+
+interface TransactionDetails {
+    isL1Originated: boolean;
+    status: string;
+    fee: BigNumberish;
+    initiatorAddress: Address;
+    receivedAt: Date;
+    ethCommitTxHash?: string;
+    ethProveTxHash?: string;
+    ethExecuteTxHash?: string;
+}
 
 dotenv.config();
 
@@ -28,12 +40,15 @@ async function main() {
     let tx: ethers.TransactionResponse | null;
     let txHash: string;
     let txReceipt: ethers.TransactionReceipt | null;
+    let txDetails: TransactionDetails | null;
+    let txStatus: string;
     let gasUsed: bigint;
     let gasPrice: bigint;
     let txFeeWei: bigint;
     let txFee: string;
     let contract: ethers.Contract;
 
+    //
     // Send zkTCRO to recipient
     // In the zksync-ethers library, for convenience, the Wallet class has a transfer method,
     // which can transfer ETH or any ERC20 token within the same interface.
@@ -50,54 +65,108 @@ async function main() {
     //     gasPrice = txReceipt.gasPrice;
     //     txFeeWei = gasUsed * gasPrice;
     //     txFee = ethers.formatUnits(txFeeWei, "ether");
-    //     console.log("Transaction fee:", txFee, "zkTCRO");
+    //     console.log("Transaction fee:", txFee, "zkCRO");
     // }
 
-    // Deposit zkTCRO from L1 to L2
-    // First, approve the bridge to spend token and then use the zkSync deposit method
     //
-    console.log("\nDepositing zkTCRO from L1 to L2...");
-    amountETH = "0.01";
-    amountWei = ethers.parseEther(amountETH);
-    tx = await l2Wallet.deposit({
-        token: ZKTCRO_L1_ADDRESS,
-        amount: amountWei,
-        to: l2Wallet.address,
-        approveERC20: true,
-        approveBaseERC20: true
-    });
-    txHash = tx.hash;
-    console.log("Transaction created:", txHash);
-    txReceipt = await tx.wait();
-    if (tx && txReceipt) {
-        console.log("Transaction included on L1 in block:", txReceipt.blockNumber);
-        gasUsed = txReceipt.gasUsed;
-        gasPrice = txReceipt.gasPrice;
-        txFeeWei = gasUsed * gasPrice;
-        txFee = ethers.formatUnits(txFeeWei, "ether");
-        console.log("Transaction fee:", txFee, "ETH");
-        console.log("Retrieving the corresponding L2 transaction...");
-        let keepWaiting = true;
-        while (keepWaiting) {
-            try {
-                await new Promise(resolve => setTimeout(resolve, 15000));
-                // Finding the corresponding L2 transaction
-                tx = await l1Provider.getTransaction(txHash);
-                if (tx) {
-                    const l2TxResponse =
-                        await l2Provider.getL2TransactionFromPriorityOp(tx);
-                    if (l2TxResponse) {
-                        console.log("l2TxResponse hash: ", l2TxResponse.hash);
-                        keepWaiting = false;
-                    }
-                    keepWaiting = false;
-                }
-            } catch (e) {
-                // console.error(e);
-                console.log("Could not retrieve the L2 transaction yet... will keep trying ...");
-            }
-        }
-    }
+    // Deposit zkTCRO from L1 to L2
+    //
+    // console.log("\nDepositing zkTCRO from L1 to L2...");
+    // amountETH = "0.01";
+    // amountWei = ethers.parseEther(amountETH);
+    // tx = await l2Wallet.deposit({
+    //     token: ZKTCRO_L1_ADDRESS,
+    //     amount: amountWei,
+    //     to: l2Wallet.address,
+    //     approveERC20: true,
+    //     approveBaseERC20: true
+    // });
+    // txHash = tx.hash;
+    // console.log("Transaction created:", txHash);
+    // txReceipt = await tx.wait();
+    // if (tx && txReceipt) {
+    //     console.log("Transaction included on L1 in block:", txReceipt.blockNumber);
+    //     gasUsed = txReceipt.gasUsed;
+    //     gasPrice = txReceipt.gasPrice;
+    //     txFeeWei = gasUsed * gasPrice;
+    //     txFee = ethers.formatUnits(txFeeWei, "ether");
+    //     console.log("Transaction fee:", txFee, "ETH");
+    //     console.log("Retrieving the corresponding L2 transaction...");
+    //     let keepWaiting = true;
+    //     while (keepWaiting) {
+    //         try {
+    //             await new Promise(resolve => setTimeout(resolve, 15000));
+    //             // Finding the corresponding L2 transaction
+    //             tx = await l1Provider.getTransaction(txHash);
+    //             if (tx) {
+    //                 const l2TxResponse =
+    //                     await l2Provider.getL2TransactionFromPriorityOp(tx);
+    //                 if (l2TxResponse) {
+    //                     console.log("l2TxResponse hash: ", l2TxResponse.hash);
+    //                     keepWaiting = false;
+    //                 }
+    //                 keepWaiting = false;
+    //             }
+    //         } catch (e) {
+    //             // console.error(e);
+    //             console.log("Could not retrieve the L2 transaction yet... will keep trying ...");
+    //         }
+    //     }
+    // }
+
+    //
+    // Withdraw zkTCRO from L2 to L1
+    //
+    // console.log("\nWithdrawing zkTCRO from L2 to L1...");
+    // amountETH = "0.01";
+    // amountWei = ethers.parseEther(amountETH);
+    // console.log("Initiate withdrawal...");
+    // tx = await l2Wallet.withdraw({
+    //     token: ZKTCRO_L2_ADDRESS,
+    //     amount: amountWei,
+    //     to: l1Wallet.address,
+    // });
+    // txHash = tx.hash;
+    // console.log("Transaction created:", txHash);
+    // txReceipt = await tx.wait();
+    // if (tx && txReceipt) {
+    //     console.log("Transaction included on L2 in block:", txReceipt.blockNumber);
+    //     gasUsed = txReceipt.gasUsed;
+    //     gasPrice = txReceipt.gasPrice;
+    //     txFeeWei = gasUsed * gasPrice;
+    //     txFee = ethers.formatUnits(txFeeWei, "ether");
+    //     console.log("Transaction fee:", txFee, "zkCRO");
+    //     console.log("It will take a while before the withdrawal can be finalized on L1." +
+    //         " In transactionDetails, the status must be 'verified' before the withdrawal can be finalized on L1");
+    // }
+
+    //
+    // Finalize zkCRO withdrawal on L1
+    // This part of the code can only be called after a while, so the transaction Hash is hardcoded manually below
+    //
+    // txHash = "0x66411866dc3479cc8d8f76e6bb457b95752757f8080e8bfb4e35db5981e6b81d";
+    // console.log("\nFinalizing zkTCRO withdrawal on L1...");
+    // console.log("First, we need to check the status of the transaction on L2...");
+    // console.log("Transaction hash: ", txHash);
+    // tx = await l2Provider.getTransaction(txHash);
+    // txDetails = await l2Provider.getTransactionDetails(txHash);
+    // if (txDetails) {
+    //     txStatus = txDetails.status;
+    //     console.log("Transaction status: ", txDetails.status);
+    //     if (txStatus == "verified") {
+    //         console.log("Transaction is verified on L1. Finalizing withdrawal...");
+    //         tx = await l2Wallet.finalizeWithdrawal(txHash);
+    //         console.log("Transaction created:", tx.hash);
+    //         txReceipt = await tx.wait();
+    //         if (txReceipt) {
+    //             console.log("Transaction included on L1 in block:", txReceipt.blockNumber);
+    //         }
+    //     }
+    // }
+
+    //
+    // THE END FOR NOW
+    //
 }
 
 main().catch(console.error);
