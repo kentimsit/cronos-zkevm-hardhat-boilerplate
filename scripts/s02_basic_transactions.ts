@@ -77,7 +77,6 @@ async function main() {
         amount: amountWei,
         to: l2Wallet.address,
         approveERC20: true,
-        // @ts-ignore
         approveBaseERC20: true
     });
     console.log("Transaction created:", tx.hash);
