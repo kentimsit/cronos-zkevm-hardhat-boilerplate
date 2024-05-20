@@ -27,7 +27,9 @@ The basic reading and writing scripts are in the /scripts folder:
 * s01_read_blockchain.ts: read wallet balances, blocks and transactions.
 * s02_basic_transactions.ts: transfer zkTCRO, deposit zkTCRO from L1 to L2, withdraw zkTCRO from L2 to L1.
 
-# Hardhat config
+# Smart contract development
+
+## Hardhat config
 
 The settings for the Cronos zkEVM testnet network are as follows:
 
@@ -46,11 +48,26 @@ The settings for the Cronos zkEVM testnet network are as follows:
 The Cronos zkEVM contract verification URL is: https://testnet.zkevm.cronos.org/contract_verification. It supports
 Solidity up to version 0.8.25, and Zksolc up to version 1.4.1.
 
-# Smart contracts
+## Compilation and deployment
 
 The smart contracts in this repository are written in Solidity and are based on the OpenZeppelin library. Considering
 that `@matterlabs/hardhat-zksync-upgradable` does not currently support OpenZeppelin libraries above v4.9.5, we are only
 using `@openzeppelin/contracts-upgradeable@4.9.5` and `@openzeppelin/contracts@4.9.5`.
 
+To compile all the contracts in the /contracts directory, run:
 
+```shell
+npx hardhat compile --network cronosZkEvmTestnet
+```
 
+To deploy and verify the contract to Cronos zkEVM testnet, run;
+
+```shell
+npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTestnet
+```
+
+# Interacting with the deployed contract
+
+A basic reading and writing script is included in the /scripts folder:
+
+* s03_smart_contract_read_and_write.ts: read contract, write contract.

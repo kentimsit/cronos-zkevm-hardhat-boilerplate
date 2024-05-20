@@ -3,19 +3,8 @@
 
 import * as dotenv from "dotenv";
 import {Provider as ZkProvider, Wallet as ZkWallet} from "zksync-ethers";
-import {BigNumberish, ethers} from "ethers";
-import {Address} from "zksync-ethers/build/types";
-
-interface TransactionDetails {
-    isL1Originated: boolean;
-    status: string;
-    fee: BigNumberish;
-    initiatorAddress: Address;
-    receivedAt: Date;
-    ethCommitTxHash?: string;
-    ethProveTxHash?: string;
-    ethExecuteTxHash?: string;
-}
+import {TransactionDetails} from "zksync-ethers/build/types";
+import {ethers} from "ethers";
 
 dotenv.config();
 
@@ -25,7 +14,6 @@ async function main() {
     const TCRO_L1_ADDRESS = process.env.TCRO_L1_ADDRESS!;
     const ZKTCRO_L1_ADDRESS = process.env.ZKTCRO_L1_ADDRESS!;
     const ZKTCRO_L2_ADDRESS = process.env.ZKTCRO_L2_ADDRESS!;
-    const BRIDGE_ERC20_L1_PROXY_ADDRESS = process.env.BRIDGE_ERC20_L1_PROXY_ADDRESS!;
 
     // Define providers and wallets
     const l1Provider = new ethers.JsonRpcProvider(process.env.ETHEREUM_SEPOLIA_URL);
@@ -77,7 +65,7 @@ async function main() {
     // tx = await l2Wallet.deposit({
     //     token: ZKTCRO_L1_ADDRESS,
     //     amount: amountWei,
-    //     to: l2Wallet.address,
+    //     to: recipient,
     //     approveERC20: true,
     //     approveBaseERC20: true
     // });
@@ -124,7 +112,7 @@ async function main() {
     // tx = await l2Wallet.withdraw({
     //     token: ZKTCRO_L2_ADDRESS,
     //     amount: amountWei,
-    //     to: l1Wallet.address,
+    //     to: recipient,
     // });
     // txHash = tx.hash;
     // console.log("Transaction created:", txHash);
