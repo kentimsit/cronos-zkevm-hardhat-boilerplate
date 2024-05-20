@@ -71,3 +71,10 @@ npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTe
 A basic reading and writing script is included in the /scripts folder:
 
 * s03_smart_contract_read_and_write.ts: read contract, write contract.
+
+# Going further
+
+Now that you have seen a few working examples of using Cronos zkEVM, you should be able to translate the zkSync
+documentation into Cronos zkEVM code.
+
+For the zkSync documentation, refer to: https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html 
