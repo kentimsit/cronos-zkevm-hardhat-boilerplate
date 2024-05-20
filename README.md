@@ -5,9 +5,11 @@ May 2024).
 
 # Set-up
 
+As zksync-ethers v6.8.0-beta.4 is not yet an official release and creates some dependency conflicts, using npm install --force to install the dependencies is recommended.
+
 This repository uses Node 20 with Typescript and the following packages:
 
-- zksync-ethers (v6.7.1) and ethers (v6) (see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
+- zksync-ethers (v6.8.0-beta.4 for now, this will be updated when the the new release is official) and ethers (v6) (see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
 - hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
 
 It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then migrated to be compatible with ZK Stack using the instructions

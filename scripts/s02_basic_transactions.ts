@@ -2,14 +2,10 @@
 // npx ts-node scripts/s02_basic_transactions.ts
 
 import * as dotenv from "dotenv";
-dotenv.config();
+import {Provider as ZkProvider, Wallet as ZkWallet,} from "zksync-ethers";
+import {ethers} from "ethers";
 
-import {
-    Wallet as ZkWallet,
-    Provider as ZkProvider,
-    utils as Zkutils,
-} from "zksync-ethers";
-import { ethers } from "ethers";
+dotenv.config();
 
 // Main script
 async function main() {
@@ -29,7 +25,8 @@ async function main() {
     // Define empty variables with type
     let amountETH: string;
     let amountWei: bigint;
-    let tx: ethers.TransactionResponse
+    let tx: ethers.TransactionResponse | null;
+    let txHash: string;
     let txReceipt: ethers.TransactionReceipt | null;
     let gasUsed: bigint;
     let gasPrice: bigint;
@@ -40,6 +37,7 @@ async function main() {
     // Send zkTCRO to recipient
     // In the zksync-ethers library, for convenience, the Wallet class has a transfer method,
     // which can transfer ETH or any ERC20 token within the same interface.
+    //
     // console.log("\nSending zkTCRO to recipient: ", recipient, "...")
     // amountETH = "0.01";
     // amountWei = ethers.parseEther(amountETH);
@@ -57,21 +55,10 @@ async function main() {
 
     // Deposit zkTCRO from L1 to L2
     // First, approve the bridge to spend token and then use the zkSync deposit method
-    console.log("\nDepositing zkTCRO from L1 to L2...")
+    //
+    console.log("\nDepositing zkTCRO from L1 to L2...");
     amountETH = "0.01";
     amountWei = ethers.parseEther(amountETH);
-    // console.log("Approving the bridge to spend zkTCRO...")
-    // const approveMinimalAbi = [
-    //     'function approve(address spender, uint256 amount) public returns (bool)'
-    // ];
-    // contract = new ethers.Contract(ZKTCRO_L1_ADDRESS, approveMinimalAbi, l1Wallet);
-    // tx = await contract.approve(BRIDGE_ERC20_L1_PROXY_ADDRESS, amountWei);
-    // console.log("Transaction created:", tx.hash);
-    // txReceipt = await tx.wait();
-    // if (txReceipt) {
-    //     console.log("Transaction approved on L1 in block:", txReceipt.blockNumber);
-    // }
-    console.log("Depositing zkTCRO to L2...")
     tx = await l2Wallet.deposit({
         token: ZKTCRO_L1_ADDRESS,
         amount: amountWei,
@@ -79,15 +66,37 @@ async function main() {
         approveERC20: true,
         approveBaseERC20: true
     });
-    console.log("Transaction created:", tx.hash);
+    txHash = tx.hash;
+    console.log("Transaction created:", txHash);
     txReceipt = await tx.wait();
-    if (txReceipt) {
-        console.log("Transaction included on L2 in block:", txReceipt.blockNumber);
+    if (tx && txReceipt) {
+        console.log("Transaction included on L1 in block:", txReceipt.blockNumber);
         gasUsed = txReceipt.gasUsed;
         gasPrice = txReceipt.gasPrice;
         txFeeWei = gasUsed * gasPrice;
         txFee = ethers.formatUnits(txFeeWei, "ether");
-        console.log("Transaction fee:", txFee, "zkTCRO");
+        console.log("Transaction fee:", txFee, "ETH");
+        console.log("Retrieving the corresponding L2 transaction...");
+        let keepWaiting = true;
+        while (keepWaiting) {
+            try {
+                await new Promise(resolve => setTimeout(resolve, 15000));
+                // Finding the corresponding L2 transaction
+                tx = await l1Provider.getTransaction(txHash);
+                if (tx) {
+                    const l2TxResponse =
+                        await l2Provider.getL2TransactionFromPriorityOp(tx);
+                    if (l2TxResponse) {
+                        console.log("l2TxResponse hash: ", l2TxResponse.hash);
+                        keepWaiting = false;
+                    }
+                    keepWaiting = false;
+                }
+            } catch (e) {
+                // console.error(e);
+                console.log("Could not retrieve the L2 transaction yet... will keep trying ...");
+            }
+        }
     }
 }
 
