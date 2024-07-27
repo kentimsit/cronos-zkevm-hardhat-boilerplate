@@ -2,23 +2,29 @@
 // npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTestnet
 
 import * as dotenv from "dotenv";
-import {Provider as ZkProvider, Wallet as ZkWallet} from "zksync-ethers";
-import {ethers} from "ethers";
+import { Provider as ZkProvider, Wallet as ZkWallet } from "zksync-ethers";
+import { ethers } from "ethers";
 
-import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {Deployer} from "@matterlabs/hardhat-zksync-deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+// import {Deployer} from "@matterlabs/hardhat-zksync-deploy";
+import { Deployer } from "@matterlabs/hardhat-zksync";
 
 dotenv.config();
-
 
 export default async function (hre: HardhatRuntimeEnvironment) {
     console.log(`Running deploy script`);
     const constructorArguments: any[] = [];
 
     // Initialize the wallet.
-    const l1Provider = new ethers.JsonRpcProvider(process.env.ETHEREUM_SEPOLIA_URL);
+    const l1Provider = new ethers.JsonRpcProvider(
+        process.env.ETHEREUM_SEPOLIA_URL
+    );
     const l2Provider = new ZkProvider(process.env.CRONOS_ZKEVM_URL!);
-    const l2Wallet = new ZkWallet(process.env.WALLET_PRIVATE_KEY!, l2Provider, l1Provider);
+    const l2Wallet = new ZkWallet(
+        process.env.WALLET_PRIVATE_KEY!,
+        l2Provider,
+        l1Provider
+    );
 
     // Create deployer object and load the artifact of the contract we want to deploy.
     const l2Deployer = new Deployer(hre, l2Wallet);
@@ -35,7 +41,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     // Gross up deploymentFee Bigint by a multiplier, if needed to avoid "out of gas" errors. The result must be a bigint
     deploymentFeeWei = (deploymentFeeWei * BigInt(100)) / BigInt(100);
 
-    console.log(`Estimated deployment cost: ${ethers.formatEther(deploymentFeeWei)} ZKCRO`);
+    console.log(
+        `Estimated deployment cost: ${ethers.formatEther(deploymentFeeWei)} ZKCRO`
+    );
 
     // Check if the wallet has enough balance
     const balance = await l2Wallet.getBalance();
@@ -72,6 +80,4 @@ export default async function (hre: HardhatRuntimeEnvironment) {
         noCompile: true,
     });
     console.log("Verification request id:", verificationRequestId);
-
 }
-

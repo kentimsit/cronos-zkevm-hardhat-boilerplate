@@ -1,15 +1,15 @@
-import {HardhatUserConfig} from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 
 import "@nomicfoundation/hardhat-toolbox";
-import "@matterlabs/hardhat-zksync-node";
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-verify";
+import "@matterlabs/hardhat-zksync";
+// import "@matterlabs/hardhat-zksync-node";
+// import "@matterlabs/hardhat-zksync-deploy";
+// import "@matterlabs/hardhat-zksync-solc";
+// import "@matterlabs/hardhat-zksync-verify";
 
 import * as dotenv from "dotenv";
 
 dotenv.config();
-
 
 const config: HardhatUserConfig = {
     defaultNetwork: "cronosZkEvmTestnet",
@@ -29,8 +29,7 @@ const config: HardhatUserConfig = {
             ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL: "https://explorer.zkevm.cronos.org/contract_verification",
-
-        }
+        },
     },
     zksolc: {
         // For Cronos zkEVM, currently only supports zksolc version up to 1.4.1 for contract verification
