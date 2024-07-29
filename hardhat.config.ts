@@ -7,10 +7,19 @@ import "@matterlabs/hardhat-zksync";
 // import "@matterlabs/hardhat-zksync-solc";
 // import "@matterlabs/hardhat-zksync-verify";
 
+// Import dotenv to read .env file
+
 import * as dotenv from "dotenv";
 
 dotenv.config();
-
+const cronos_zkevm_mainnet_apikey: string = <string>(
+    process.env.CRONOS_ZKEVM_DEVELOPER_PORTAL_MAINNET_API_KEY
+);
+const cronos_zkevm_testnet_apikey: string = <string>(
+    process.env.CRONOS_ZKEVM_DEVELOPER_PORTAL_TESTNET_API_KEY
+);
+console.log("Api key:");
+console.log(cronos_zkevm_testnet_apikey);
 const config: HardhatUserConfig = {
     defaultNetwork: "cronosZkEvmTestnet",
     networks: {
@@ -22,14 +31,16 @@ const config: HardhatUserConfig = {
             ethNetwork: "mainnet",
             zksync: true,
             verifyURL:
-                "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+                "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
+                cronos_zkevm_mainnet_apikey,
         },
         cronosZkEvmTestnet: {
             url: "https://testnet.zkevm.cronos.org",
             ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL:
-                "https://explorer.zkevm.cronos.org/contract_verification",
+                "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
+                cronos_zkevm_testnet_apikey,
         },
     },
     zksolc: {
