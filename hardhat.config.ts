@@ -28,7 +28,8 @@ const config: HardhatUserConfig = {
             url: "https://testnet.zkevm.cronos.org",
             ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
-            verifyURL: "https://explorer.zkevm.cronos.org/contract_verification",
+            verifyURL:
+                "https://explorer.zkevm.cronos.org/contract_verification",
         },
     },
     zksolc: {
