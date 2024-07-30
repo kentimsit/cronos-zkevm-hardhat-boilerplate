@@ -8,7 +8,6 @@ import "@matterlabs/hardhat-zksync";
 // import "@matterlabs/hardhat-zksync-verify";
 
 // Import dotenv to read .env file
-
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -40,6 +39,14 @@ const config: HardhatUserConfig = {
             zksync: true,
             verifyURL:
                 "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
+                cronos_zkevm_testnet_apikey,
+        },
+        cronosZkEvmMainnet: {
+            url: "https://mainnet.zkevm.cronos.org",
+            ethNetwork: "mainnet", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+            zksync: true,
+            verifyURL:
+                "https://explorer-api.mainnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
                 cronos_zkevm_testnet_apikey,
         },
     },

@@ -1,22 +1,22 @@
-# Cronos zkEVM Tethys Testnet Demo (May 2024)
+# Cronos zkEVM Hardhat Demo Repository
 
-The goal of this repository is to demonstrate basic use of the Tethys release of the Cronos zkEVM testnet network (as of
-May 2024).
+The goal of this repository is to demonstrate basic use of Cronos zkEVM to develop smart contract and implement on-chain transactions.
 
 # Set-up
 
-As zksync-ethers v6.8.0-beta.4 is not yet an official release and creates some dependency conflicts,
-using `npm install --force` to install the dependencies is recommended.
-
 This repository uses Node 20 with Typescript and the following packages:
 
-- zksync-ethers (v6.8.0-beta.4 for now, this will be updated when the the new release is official) and ethers (v6) (
-  see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
-- hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
+-   zksync-ethers (v6.9.0) together with ethers (v6) (
+    see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
+-   hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
 
 It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then
 migrated to be compatible with ZK Stack using the instructions
-described in the ZK Sync documentation ("migration guide"). See `package.json`  for the full list of dependencies.
+described in the ZK Sync documentation ("migration guide"). See `package.json` for the full list of dependencies.
+
+To install the dependencies of this repository, type `npm install`.
+
+The zksync-ethers package is constantly moving and unfortunately, this means that this repository may present dependency conflicts over time. At the time of writing, `npm install` returns some warnings but no errors. Pay attention to the version numbers in `package.json` if you are trying to recreate this project at home.
 
 # Basic blockchain reading and writing operations
 
@@ -24,8 +24,8 @@ You can find the Cronos zkEVM testnet blockchain explorer at: https://explorer.z
 
 The basic reading and writing scripts are in the /scripts folder:
 
-* s01_read_blockchain.ts: read wallet balances, blocks and transactions.
-* s02_basic_transactions.ts: transfer zkTCRO, deposit zkTCRO from L1 to L2, withdraw zkTCRO from L2 to L1.
+-   s01_read_blockchain.ts: read wallet balances, blocks and transactions.
+-   s02_basic_transactions.ts: transfer zkTCRO, deposit zkTCRO from L1 to L2, withdraw zkTCRO from L2 to L1.
 
 # Smart contract development
 
@@ -35,18 +35,19 @@ The settings for the Cronos zkEVM testnet network are as follows:
 
 ```json lines
 {
-  cronosZkEvmTestnet: {
-    url: "https://testnet.zkevm.cronos.org",
-    ethNetwork: "sepolia",
-    // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
-    zksync: true,
-    verifyURL: "https://testnet.zkevm.cronos.org/contract_verification",
-  }
+    "cronosZkEvmTestnet": {
+        "url": "https://testnet.zkevm.cronos.org",
+        "ethNetwork": "sepolia",
+        // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+        "zksync": true,
+        "verifyURL": "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey={api_key}"
+    }
 }
 ```
 
-The Cronos zkEVM contract verification URL is: https://testnet.zkevm.cronos.org/contract_verification. It supports
-Solidity up to version 0.8.25, and Zksolc up to version 1.4.1.
+In order to obtain an API key for contract verification, please visit the Cronos zkEVM Developer Portal at: [https://developers.zkevm.cronos.org/](https://developers.zkevm.cronos.org/).
+
+Alternatively, you can verify contracts by visiting the user interface at [https://explorer.zkevm.cronos.org/testnet/verifyContract](https://explorer.zkevm.cronos.org/testnet/verifyContract).
 
 ## Compilation and deployment
 
@@ -70,11 +71,11 @@ npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTe
 
 A basic reading and writing script is included in the /scripts folder:
 
-* s03_smart_contract_read_and_write.ts: read contract, write contract.
+-   s03_smart_contract_read_and_write.ts: read contract, write contract.
 
 # Going further
 
 Now that you have seen a few working examples of using Cronos zkEVM, you should be able to translate the zkSync
 documentation into Cronos zkEVM code.
 
-For the zkSync documentation, refer to: https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html 
+For the zkSync documentation, refer to: https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html
