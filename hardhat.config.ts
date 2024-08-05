@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
         },
     },
     zksolc: {
-        // For Cronos zkEVM, currently only supports zksolc version up to 1.4.1 for contract verification
+        // For Cronos zkEVM, currently only supports zksolc version up to 1.5.2 for contract verification
         version: "1.4.1",
         settings: {
             // find all available options in the official documentation
@@ -59,7 +59,7 @@ const config: HardhatUserConfig = {
         },
     },
     solidity: {
-        // For Cronos zkEVM, currently only supports solidity version up to 0.8.25 for contract verification
+        // For Cronos zkEVM, currently only supports solidity version up to 0.8.26 for contract verification
         version: "0.8.24",
         settings: {
             optimizer: {
