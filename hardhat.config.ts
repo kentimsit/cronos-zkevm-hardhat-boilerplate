@@ -11,27 +11,19 @@ import "@matterlabs/hardhat-zksync";
 import * as dotenv from "dotenv";
 
 dotenv.config();
-const cronos_zkevm_mainnet_apikey: string = <string>(
-    process.env.CRONOS_ZKEVM_DEVELOPER_PORTAL_MAINNET_API_KEY
-);
+
 const cronos_zkevm_testnet_apikey: string = <string>(
     process.env.CRONOS_ZKEVM_DEVELOPER_PORTAL_TESTNET_API_KEY
 );
-console.log("Api key:");
-console.log(cronos_zkevm_testnet_apikey);
+const cronos_zkevm_mainnet_apikey: string = <string>(
+    process.env.CRONOS_ZKEVM_DEVELOPER_PORTAL_MAINNET_API_KEY
+);
+
 const config: HardhatUserConfig = {
     defaultNetwork: "cronosZkEvmTestnet",
     networks: {
         hardhat: {
             zksync: false,
-        },
-        zkSyncMainnet: {
-            url: "https://mainnet.era.zksync.io",
-            ethNetwork: "mainnet",
-            zksync: true,
-            verifyURL:
-                "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
-                cronos_zkevm_mainnet_apikey,
         },
         cronosZkEvmTestnet: {
             url: "https://testnet.zkevm.cronos.org",
@@ -46,8 +38,23 @@ const config: HardhatUserConfig = {
             ethNetwork: "mainnet", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL:
-                "https://explorer-api.mainnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
-                cronos_zkevm_testnet_apikey,
+                "https://explorer-api.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
+                cronos_zkevm_mainnet_apikey,
+        },
+        zkSyncMainnet: {
+            // If you want to try your deployment on ZKsync Era mainnet for reference
+            url: "https://mainnet.era.zksync.io",
+            ethNetwork: "mainnet",
+            zksync: true,
+            verifyURL:
+                "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+        },
+        zkSyncSepoliaTestnet: {
+            url: "https://sepolia.era.zksync.dev",
+            ethNetwork: "sepolia",
+            zksync: true,
+            verifyURL:
+                "https://explorer.sepolia.era.zksync.dev/contract_verification",
         },
     },
     zksolc: {
@@ -56,6 +63,10 @@ const config: HardhatUserConfig = {
         settings: {
             // find all available options in the official documentation
             // https://era.zksync.io/docs/tools/hardhat/hardhat-zksync-solc.html#configuration
+            metadata: {
+                // Set bytecodeHash to "none" so that the bytecode is the same at every compilation of a given code base
+                bytecodeHash: "none",
+            },
         },
     },
     solidity: {

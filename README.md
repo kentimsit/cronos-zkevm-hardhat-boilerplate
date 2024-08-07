@@ -10,9 +10,7 @@ This repository uses Node 20 with Typescript and the following packages:
     see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
 -   hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
 
-It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then
-migrated to be compatible with ZK Stack using the instructions
-described in the ZK Sync documentation ("migration guide"). See `package.json` for the full list of dependencies.
+It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then migrated to be compatible with ZK Stack using the instructions described in the ZK Sync documentation ("migration guide"). See `package.json` for the full list of dependencies.
 
 To install the dependencies of this repository, type `npm install`.
 

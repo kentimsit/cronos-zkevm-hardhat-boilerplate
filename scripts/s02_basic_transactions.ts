@@ -2,9 +2,9 @@
 // npx ts-node scripts/s02_basic_transactions.ts
 
 import * as dotenv from "dotenv";
-import {Provider as ZkProvider, Wallet as ZkWallet} from "zksync-ethers";
-import {TransactionDetails} from "zksync-ethers/build/types";
-import {ethers} from "ethers";
+import { Provider as ZkProvider, Wallet as ZkWallet } from "zksync-ethers";
+import { TransactionDetails } from "zksync-ethers/build/types";
+import { ethers } from "ethers";
 
 dotenv.config();
 
@@ -16,10 +16,19 @@ async function main() {
     const ZKTCRO_L2_ADDRESS = process.env.ZKTCRO_L2_ADDRESS!;
 
     // Define providers and wallets
-    const l1Provider = new ethers.JsonRpcProvider(process.env.ETHEREUM_SEPOLIA_URL);
-    const l2Provider = new ZkProvider(process.env.CRONOS_ZKEVM_URL!);
-    const l1Wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY!, l1Provider);
-    const l2Wallet = new ZkWallet(process.env.WALLET_PRIVATE_KEY!, l2Provider, l1Provider);
+    const l1Provider = new ethers.JsonRpcProvider(
+        process.env.ETHEREUM_SEPOLIA_URL
+    );
+    const l2Provider = new ZkProvider(process.env.CRONOS_ZKEVM_TESTNET_URL!);
+    const l1Wallet = new ethers.Wallet(
+        process.env.WALLET_PRIVATE_KEY!,
+        l1Provider
+    );
+    const l2Wallet = new ZkWallet(
+        process.env.WALLET_PRIVATE_KEY!,
+        l2Provider,
+        l1Provider
+    );
     const recipient = process.env.WALLET_ADDRESS!;
 
     // Define empty variables with type
