@@ -6,20 +6,32 @@ import { Provider as ZkProvider, Wallet as ZkWallet } from "zksync-ethers";
 import { ethers } from "ethers";
 
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-// import {Deployer} from "@matterlabs/hardhat-zksync-deploy";
-import { Deployer } from "@matterlabs/hardhat-zksync";
+import { Deployer as ZkDeployer } from "@matterlabs/hardhat-zksync";
+
+// Used to access the ABI in case we just want to verify the contract
+const CONTRACT_ARTIFACT = require("../artifacts-zk/contracts/MyERC20Token.sol/MyERC20Token.json");
 
 dotenv.config();
 
+interface MyNetworkConfig {
+    url: string;
+    ethNetwork: string;
+}
+
 export default async function (hre: HardhatRuntimeEnvironment) {
     console.log(`Running deploy script`);
-    const constructorArguments: any[] = [];
 
-    // Initialize the wallet.
-    const l1Provider = new ethers.JsonRpcProvider(
-        process.env.ETHEREUM_SEPOLIA_URL
-    );
-    const l2Provider = new ZkProvider(process.env.CRONOS_ZKEVM_URL!);
+    console.log("\nConnecting to blockchain network...");
+    const networkConfig = hre.network.config as MyNetworkConfig;
+    console.log("The chosen network config is:", networkConfig);
+    const l1Provider = new ethers.JsonRpcProvider(networkConfig.ethNetwork!);
+    const l2Provider = new ZkProvider(networkConfig.url!);
+    const l2Network = await l2Provider.getNetwork();
+    console.log("Connected to network ID", l2Network.chainId.toString());
+    const latestL2Block = await l2Provider.getBlockNumber();
+    console.log("Latest network block", latestL2Block);
+
+    // Initialize the wallet
     const l2Wallet = new ZkWallet(
         process.env.WALLET_PRIVATE_KEY!,
         l2Provider,
@@ -27,10 +39,21 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     );
 
     // Create deployer object and load the artifact of the contract we want to deploy.
-    const l2Deployer = new Deployer(hre, l2Wallet);
+    const l2Deployer = new ZkDeployer(hre, l2Wallet);
 
     // Load contract
     const artifact = await l2Deployer.loadArtifact("MyERC20Token");
+    const constructorArguments: any[] = [];
+
+    // If the contract has already been deployed and we just need to verify it, uncomment the following lines and comment the deployment code below
+    // const l2Contract = new ethers.Contract(
+    //     address,
+    //     CONTRACT_ARTIFACT.abi,
+    //     l2Provider
+    // );
+    // const address = "";
+
+    // BEGINNING OF DEPLOYMENT
 
     // Estimate contract deployment fee
     let deploymentFeeWei = await l2Deployer.estimateDeployFee(
@@ -42,7 +65,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     deploymentFeeWei = (deploymentFeeWei * BigInt(100)) / BigInt(100);
 
     console.log(
-        `Estimated deployment cost: ${ethers.formatEther(deploymentFeeWei)} ZKCRO`
+        `Estimated deployment cost: ${ethers.formatEther(
+            deploymentFeeWei
+        )} ZKCRO`
     );
 
     // Check if the wallet has enough balance
@@ -58,6 +83,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     // similar to the ones in `ethers`.
     const l2Contract = await l2Deployer.deploy(artifact, constructorArguments);
     const address = await l2Contract.getAddress();
+
+    // END OF DEPLOYMENT
+
     const constructorArgs =
         l2Contract.interface.encodeDeploy(constructorArguments);
     const fullContractSource = `${artifact.sourceName}:${artifact.contractName}`;

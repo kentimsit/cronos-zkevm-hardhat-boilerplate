@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
         },
         cronosZkEvmTestnet: {
             url: "https://testnet.zkevm.cronos.org",
-            ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+            ethNetwork: process.env.ETHEREUM_SEPOLIA_URL,
             zksync: true,
             verifyURL:
                 "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
@@ -35,26 +35,27 @@ const config: HardhatUserConfig = {
         },
         cronosZkEvmMainnet: {
             url: "https://mainnet.zkevm.cronos.org",
-            ethNetwork: "mainnet", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+            ethNetwork: process.env.ETHEREUM_MAINNET_URL,
             zksync: true,
             verifyURL:
                 "https://explorer-api.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey=" +
                 cronos_zkevm_mainnet_apikey,
         },
-        zkSyncMainnet: {
-            // If you want to try your deployment on ZKsync Era mainnet for reference
-            url: "https://mainnet.era.zksync.io",
-            ethNetwork: "mainnet",
-            zksync: true,
-            verifyURL:
-                "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
-        },
         zkSyncSepoliaTestnet: {
+            // If you want to try your deployment on ZKsync Era testnet for reference
             url: "https://sepolia.era.zksync.dev",
-            ethNetwork: "sepolia",
+            ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL:
                 "https://explorer.sepolia.era.zksync.dev/contract_verification",
+        },
+        zkSyncMainnet: {
+            // If you want to try your deployment on ZKsync Era mainnet for reference
+            url: "https://mainnet.era.zksync.io",
+            ethNetwork: "mainnet", // or a Ethereum RPC endpoint from Infura/Alchemy/Chainstack etc.
+            zksync: true,
+            verifyURL:
+                "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
         },
     },
     zksolc: {

@@ -67,8 +67,6 @@ npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTe
 
 # Deploy to mainnet and verify
 npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmMainnet
-# Verify only, after deployment
-npx hardhat deploy-zksync --script verifyOnlyMyERC20Token.ts --network cronosZkEvmMainnet
 ```
 
 # Interacting with the deployed contract
