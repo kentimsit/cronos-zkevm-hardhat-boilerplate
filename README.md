@@ -59,10 +59,16 @@ To compile all the contracts in the /contracts directory, run:
 npx hardhat compile --network cronosZkEvmTestnet
 ```
 
-To deploy and verify the contract to Cronos zkEVM testnet, run;
+To deploy and verify the contract, run:
 
 ```shell
+# Deploy to testnet and verify
 npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmTestnet
+
+# Deploy to mainnet and verify
+npx hardhat deploy-zksync --script deployMyERC20Token.ts --network cronosZkEvmMainnet
+# Verify only, after deployment
+npx hardhat deploy-zksync --script verifyOnlyMyERC20Token.ts --network cronosZkEvmMainnet
 ```
 
 # Interacting with the deployed contract

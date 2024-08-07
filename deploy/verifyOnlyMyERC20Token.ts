@@ -12,7 +12,7 @@ const CONTRACT_ARTIFACT = require("../artifacts-zk/contracts/MyERC20Token.sol/My
 dotenv.config();
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-    console.log(`Running deploy script`);
+    console.log(`Running contract verification script`);
     const constructorArguments: any[] = [];
 
     // Initialize the wallet.
