@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
                 cronos_zkevm_testnet_apikey,
         },
         cronosZkEvmMainnet: {
-            url: "https://mainnet.zkevm.cronos.org",
+            url: process.env.CRONOS_ZKEVM_MAINNET_URL,
             ethNetwork: process.env.ETHEREUM_MAINNET_URL,
             zksync: true,
             verifyURL:
@@ -42,7 +42,7 @@ const config: HardhatUserConfig = {
                 cronos_zkevm_mainnet_apikey,
         },
         cronosZkEvmMainnetWithApiKey: {
-            url: "https://xxxx.zkevm.cronos.org",
+            url: process.env.CRONOS_ZKEVM_MAINNET_URL_WITH_API_KEY,
             ethNetwork: process.env.ETHEREUM_MAINNET_URL,
             zksync: true,
             verifyURL:
@@ -54,7 +54,7 @@ const config: HardhatUserConfig = {
         },
         zkSyncSepoliaTestnet: {
             // If you want to try your deployment on ZKsync Era testnet for reference
-            url: "https://sepolia.era.zksync.dev",
+            url: process.env.CRONOS_ZKEVM_TESTNET_URL,
             ethNetwork: "sepolia", // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL:
