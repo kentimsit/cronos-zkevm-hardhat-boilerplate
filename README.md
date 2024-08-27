@@ -140,7 +140,7 @@ Copy the entire contents of the `input` object of the JSON file, and paste it in
 
 Visit https://explorer.zkevm.cronos.org/verifyContract and complete the following information:
 
--   Contract name: with this example, it's MyERC20Token.
+-   Contract name: should follow the `{path-to-contract}/{contract-name}` pattern. With this example, it's `contracts/MyERC20Token.sol:MyERC20Token`
 -   Contract address: address where the contract is already deployed.
 -   Compiler type: select `Solidity Standard-Json-Input`
 -   Compiler version: with this example, it's 0.8.24
