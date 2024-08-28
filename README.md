@@ -143,9 +143,10 @@ Visit https://explorer.zkevm.cronos.org/verifyContract and complete the followin
 -   Contract name: this is the name of the contract in the .sol file. With this example, it's `MyERC20Token`
 -   Contract path: With this example, it's `contracts/MyERC20Token.sol`
 -   Contract address: address where the contract is already deployed.
--   Compiler type: select `Solidity Standard-Json-Input`
+-   Compiler type: select `Solidity Standard-Json-Input` (heads up, that's not the default option!)
 -   Compiler version: with this example, it's 0.8.24 (keep zkEVM versions unchecked)
 -   ZKsync compiler version: with this example, it's 1.4.1
+-   Optimizer Enabled: with this example, it's true (see hardhat.config.ts)
 -   Constructor arguments: with this example, it's empty. Otherwise, the constructor arguments must be encoded.
 -   Contract files: with this example, it's `./deploy/examplePayloadForManualVerification.json`
 -   Agree to terms and conditions, click "I'm not a robot" and submit.
