@@ -46,12 +46,12 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     const constructorArguments: any[] = [];
 
     // If the contract has already been deployed and we just need to verify it, uncomment the following lines and comment the deployment code below
+    // const address = "";
     // const l2Contract = new ethers.Contract(
     //     address,
     //     CONTRACT_ARTIFACT.abi,
     //     l2Provider
     // );
-    // const address = "";
 
     // BEGINNING OF DEPLOYMENT
 
