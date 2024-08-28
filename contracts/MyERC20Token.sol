@@ -20,7 +20,7 @@ contract MyERC20Token is ERC20Burnable, ERC20Pausable, AccessControl {
      * @dev Constructor to initialize the token with default values.
      * You can edit these values as needed.
      */
-    constructor() ERC20("My token name4", "MyTokenSymbol4") {
+    constructor() ERC20("My token name5", "MyTokenSymbol5") {
         // Default initial supply of 1 million tokens (with 18 decimals)
         uint256 initialSupply = 1_000_000 * (10 ** 18);
 

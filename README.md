@@ -6,9 +6,9 @@ The goal of this repository is to demonstrate basic use of Cronos zkEVM to devel
 
 This repository uses Node 20 with Typescript and the following packages:
 
-- zksync-ethers (v6.9.0) together with ethers (v6) (
-  see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
-- hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
+-   zksync-ethers (v6.9.0) together with ethers (v6) (
+    see https://docs.zksync.io/build/sdks/js/zksync-ethers/getting-started.html)
+-   hardhat (see https://docs.zksync.io/build/tooling/hardhat/migrating-to-zksync.html)
 
 It was created using a standard hardhat project (https://hardhat.org/hardhat-runner/docs/guides/project-setup), and then migrated to be compatible with ZK Stack using the instructions described in the ZK Sync documentation ("migration guide").
 
@@ -24,8 +24,8 @@ You can find the Cronos zkEVM testnet blockchain explorer at: https://explorer.z
 
 The basic reading and writing scripts are in the /scripts folder:
 
-- s01_read_blockchain.ts: read wallet balances, blocks and transactions.
-- s02_basic_transactions.ts: transfer zkTCRO, deposit zkTCRO from L1 to L2, withdraw zkTCRO from L2 to L1.
+-   s01_read_blockchain.ts: read wallet balances, blocks and transactions.
+-   s02_basic_transactions.ts: transfer zkTCRO, deposit zkTCRO from L1 to L2, withdraw zkTCRO from L2 to L1.
 
 # Smart contract development
 
@@ -37,13 +37,13 @@ For example, the settings for the Cronos zkEVM testnet network are as follows:
 
 ```json lines
 {
-  "cronosZkEvmTestnet": {
-    "url": "https://testnet.zkevm.cronos.org",
-    "ethNetwork": "sepolia",
-    // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
-    "zksync": true,
-    "verifyURL": "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey={api_key}"
-  }
+    "cronosZkEvmTestnet": {
+        "url": "https://testnet.zkevm.cronos.org",
+        "ethNetwork": "sepolia",
+        // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
+        "zksync": true,
+        "verifyURL": "https://explorer-api.testnet.zkevm.cronos.org/api/v1/contract/verify/hardhat?apikey={api_key}"
+    }
 }
 ```
 
@@ -60,7 +60,7 @@ using `@openzeppelin/contracts-upgradeable@4.9.5` and `@openzeppelin/contracts@4
 To compile all the contracts in the /contracts directory, run:
 
 ```shell
-npx hardhat compile --network cronosZkEvmTestnet
+npx hardhat compile --network cronosZkEvmMainnet
 ```
 
 To deploy and verify the contract, run:
@@ -77,14 +77,14 @@ npx hardhat deploy-zksync --script deployAndVerifyMyERC20Token.ts --network cron
 
 A basic reading and writing script is included in the /scripts folder:
 
-- s03_smart_contract_read_and_write.ts: read contract, write contract.
+-   s03_smart_contract_read_and_write.ts: read contract, write contract.
 
 # Issues with contract verification
 
 If you develop a smart contract, it is imperative that the smart contract should be verified in the blockchain explorer, which is:
 
-- For mainnet: https://explorer.zkevm.cronos.org/
-- For testnet: https://explorer.zkevm.cronos.org/testnet
+-   For mainnet: https://explorer.zkevm.cronos.org/
+-   For testnet: https://explorer.zkevm.cronos.org/testnet
 
 ## Deploy and verify at the same time
 
@@ -96,8 +96,8 @@ This the next recommended path.
 
 To try it, you can:
 
-- Perform the deployment with the script `./deploy/deployOnlyMyERC20Token.ts`
-- Perform the verification with the script `./deploy/verifyOnlyMyERC20Token.ts`
+-   Perform the deployment with the script `./deploy/deployOnlyMyERC20Token.ts`
+-   Perform the verification with the script `./deploy/verifyOnlyMyERC20Token.ts`
 
 The corresponding CLI commands are:
 
@@ -123,8 +123,8 @@ This is because the hardhat.config.ts file has `bytecodeHash: "none"` under zkso
 
 The user interface for contract verification is at the following URL:
 
-- Mainnet: https://explorer.zkevm.cronos.org/verifyContract
-- Testnet: https://explorer.zkevm.cronos.org/testnet/verifyContract
+-   Mainnet: https://explorer.zkevm.cronos.org/verifyContract
+-   Testnet: https://explorer.zkevm.cronos.org/testnet/verifyContract
 
 In order to verify a contract that is already deployed, you need to following the steps described below. The steps are for mainnet.
 
@@ -140,26 +140,27 @@ Copy the entire contents of the `input` object of the JSON file, and paste it in
 
 Visit https://explorer.zkevm.cronos.org/verifyContract and complete the following information:
 
-- Contract name: should follow the `{path-to-contract}/{contract-name}` pattern. With this example, it's `contracts/MyERC20Token.sol:MyERC20Token`
-- Contract address: address where the contract is already deployed.
-- Compiler type: select `Solidity Standard-Json-Input`
-- Compiler version: with this example, it's 0.8.24
-- ZKsync compiler version: with this example, it's 1.4.1
-- Constructor arguments: with this example, it's empty. Otherwise, the constructor arguments must be encoded.
-- Contract files: with this example, it's `./deploy/examplePayloadForManualVerification.json`
-- Agree to terms and conditions, click "I'm not a robot" and submit.
+-   Contract name: this is the name of the contract in the .sol file. With this example, it's `MyERC20Token`
+-   Contract path: With this example, it's `contracts/MyERC20Token.sol`
+-   Contract address: address where the contract is already deployed.
+-   Compiler type: select `Solidity Standard-Json-Input`
+-   Compiler version: with this example, it's 0.8.24 (keep zkEVM versions unchecked)
+-   ZKsync compiler version: with this example, it's 1.4.1
+-   Constructor arguments: with this example, it's empty. Otherwise, the constructor arguments must be encoded.
+-   Contract files: with this example, it's `./deploy/examplePayloadForManualVerification.json`
+-   Agree to terms and conditions, click "I'm not a robot" and submit.
 
-After submission, the contract should be verified in a couple of minutes. If it is not verified after 2 minutes, it means that there is an issue.
+After submission, the contract should be verified in a few minutes. If it is not verified after 10 minutes, it means that there is an issue.
 
 ## Troublshooting
 
 If you are still having issues with contract verification in the blockchain explorer, here are a few pointers.
 
-- Use zksolc version: "1.4.1".
-- Use solidity version: "0.8.24".
-- Make sure that you have registered for an API key and have added the key to the .env variables.
-- Deploy your smart contract with no constructor arguments (i.e. hard code the constructor values in the .sol file), as constructor arguments can sometimes be tricky to encode.
-- Delete the `artifacts-zk`, `cache-zk` and `typechain-types` directories every time that you change the smart contract code.
+-   Use zksolc version: "1.4.1".
+-   Use solidity version: "0.8.24".
+-   Make sure that you have registered for an API key and have added the key to the .env variables.
+-   Deploy your smart contract with no constructor arguments (i.e. hard code the constructor values in the .sol file), as constructor arguments can sometimes be tricky to encode.
+-   Delete the `artifacts-zk`, `cache-zk`, `deployments-zk` and `typechain-types` directories every time that you change the smart contract code.
 
 # Going further
 
