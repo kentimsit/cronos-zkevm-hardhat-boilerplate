@@ -71,7 +71,7 @@ const config: HardhatUserConfig = {
     },
     zksolc: {
         // For Cronos zkEVM, currently only supports zksolc version up to 1.5.2 for contract verification
-        version: "1.4.1",
+        version: "1.5.3",
         settings: {
             // find all available options in the official documentation
             // https://era.zksync.io/docs/tools/hardhat/hardhat-zksync-solc.html#configuration
