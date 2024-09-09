@@ -144,8 +144,8 @@ Visit https://explorer.zkevm.cronos.org/verifyContract and complete the followin
 -   Contract path: With this example, it's `contracts/MyERC20Token.sol`
 -   Contract address: address where the contract is already deployed.
 -   Compiler type: select `Solidity Standard-Json-Input` (heads up, that's not the default option!)
--   Compiler version: with this example, it's 0.8.24 (keep zkEVM versions unchecked)
--   ZKsync compiler version: with this example, it's 1.4.1
+-   Compiler version: with this example, it's 0.8.24. The compiler version should be taken from the artifacts-zk/build-info/xxx.json file where it's referred to as solcVersion. If the format is something like zkVM-0.8.20-1.0.1, it means that you need to select a zkVM version.
+-   ZKsync compiler version: with this example, it's 1.5.3
 -   Optimizer Enabled: with this example, it's true (see hardhat.config.ts)
 -   Constructor arguments: with this example, it's empty. Otherwise, the constructor arguments must be encoded.
 -   Contract files: with this example, it's `./deploy/examplePayloadForManualVerification.json`
@@ -157,8 +157,7 @@ After submission, the contract should be verified in a few minutes. If it is not
 
 If you are still having issues with contract verification in the blockchain explorer, here are a few pointers.
 
--   Use zksolc version: "1.4.1".
--   Use solidity version: "0.8.24".
+-   Check with Cronos Labs that your solidity and zksolc versions are supported (should be up to the versions used in this repo)
 -   Make sure that you have registered for an API key and have added the key to the .env variables.
 -   Deploy your smart contract with no constructor arguments (i.e. hard code the constructor values in the .sol file), as constructor arguments can sometimes be tricky to encode.
 -   Delete the `artifacts-zk`, `cache-zk`, `deployments-zk` and `typechain-types` directories every time that you change the smart contract code.
