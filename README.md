@@ -144,8 +144,8 @@ Visit https://explorer.zkevm.cronos.org/verifyContract and complete the followin
 -   Contract path: With this example, it's `contracts/MyERC20Token.sol`
 -   Contract address: address where the contract is already deployed.
 -   Compiler type: select `Solidity Standard-Json-Input` (heads up, that's not the default option!)
--   Compiler version: with this example, it's 0.8.24. The compiler version should be taken from the artifacts-zk/build-info/xxx.json file where it's referred to as solcVersion. If the format is something like zkVM-0.8.20-1.0.1, it means that you need to select a zkVM version.
--   ZKsync compiler version: with this example, it's 1.5.3
+-   Compiler version: with this example, it's 0.8.24. The compiler version should be taken from the artifacts-zk/build-info/xxx.json file where it's referred to as solcVersion. If the format is something like zkVM-0.8.20-1.0.1, it means that you need to select a zkVM version. Before zksolc 1.5.0 (where zksolc is the ZKsync compiler, see below), the compiler version is the same as the solidity version. From zksolc 1.5.0 onward, the compiler version will be in the zkVM-{solidity_version}-{era_version} format.
+-   ZKsync compiler version (zksolc): with this example, it's 1.5.3
 -   Optimizer Enabled: with this example, it's true (see hardhat.config.ts)
 -   Constructor arguments: with this example, it's empty. Otherwise, the constructor arguments must be encoded.
 -   Contract files: with this example, it's `./deploy/examplePayloadForManualVerification.json`
