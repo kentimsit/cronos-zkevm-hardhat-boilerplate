@@ -153,6 +153,8 @@ Visit https://explorer.zkevm.cronos.org/verifyContract and complete the followin
 
 After submission, the contract should be verified in a few minutes. If it is not verified after 10 minutes, it means that there is an issue.
 
+Note: the Era version is usually set automatically, but it's possible to define it manually. See https://github.com/matter-labs/hardhat-zksync/blob/main/examples/basic-example/hardhat.config.ts#L33.
+
 ## Troublshooting
 
 If you are still having issues with contract verification in the blockchain explorer, here are a few pointers.
